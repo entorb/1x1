@@ -1,8 +1,8 @@
 import type { Card, GameHistory, Statistics } from '@/types'
 
-const CARDS_KEY = '1x1-cards'
-const HISTORY_KEY = '1x1-history'
-const STATS_KEY = '1x1-stats'
+export const CARDS_KEY = '1x1-cards'
+export const HISTORY_KEY = '1x1-history'
+export const STATS_KEY = '1x1-stats'
 
 export class StorageService {
   // Cards

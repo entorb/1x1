@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { StorageService } from '@/services/storage'
 import type { Card, FocusType, GameConfig } from '@/types'
@@ -31,6 +31,7 @@ let countdownInterval: ReturnType<typeof setInterval> | null = null
 let timeTrackingInterval: ReturnType<typeof setInterval> | null = null
 let buttonDisableTimer: ReturnType<typeof setTimeout> | null = null
 let buttonDisableCountdownInterval: ReturnType<typeof setInterval> | null = null
+let enterDisableTimer: ReturnType<typeof setTimeout> | null = null
 
 const currentCard = computed(() => gameCards.value[currentCardIndex.value])
 
@@ -39,8 +40,31 @@ const displayQuestion = computed(() => {
   return currentCard.value.question.replace('x', '\u00d7')
 })
 
+// Auto-submit after 2 digits
+watch(userAnswer, (newValue) => {
+  if (newValue !== null && newValue !== undefined && !showFeedback.value) {
+    const valueStr = String(newValue)
+    if (valueStr.length >= 2) {
+      submitAnswer()
+    }
+  }
+})
+
+function clearAllTimers() {
+  if (timeTrackingInterval) clearInterval(timeTrackingInterval)
+  if (buttonDisableTimer) clearTimeout(buttonDisableTimer)
+  if (buttonDisableCountdownInterval) clearInterval(buttonDisableCountdownInterval)
+  if (enterDisableTimer) clearTimeout(enterDisableTimer)
+  if (autoCloseTimer) clearTimeout(autoCloseTimer)
+  if (countdownInterval) clearInterval(countdownInterval)
+}
+
 onMounted(() => {
   initializeGame()
+})
+
+onUnmounted(() => {
+  clearAllTimers()
 })
 
 function initializeGame() {
@@ -117,7 +141,8 @@ function startTimeTracking() {
   timeTrackingInterval = setInterval(() => {
     elapsedTime.value = (Date.now() - answerStartTime.value) / 1000
     if (currentCard.value) {
-      timeProgress.value = Math.min(elapsedTime.value / currentCard.value.time, 1.5)
+      const cappedTime = Math.min(currentCard.value.time, 60)
+      timeProgress.value = Math.min(elapsedTime.value / cappedTime, 1.5)
     }
   }, 100) // Update every 100ms for smooth progress
 }
@@ -155,8 +180,13 @@ function clearButtonDisableTimers() {
     clearInterval(buttonDisableCountdownInterval)
     buttonDisableCountdownInterval = null
   }
+  if (enterDisableTimer) {
+    clearTimeout(enterDisableTimer)
+    enterDisableTimer = null
+  }
   isButtonDisabled.value = false
   buttonDisableCountdown.value = 0
+  isEnterDisabled.value = false
 }
 
 function submitAnswer() {
@@ -184,9 +214,9 @@ function submitAnswer() {
       time: timeTaken.value
     })
 
-    // Auto-close immediately for correct answers (user can press Enter)
-    autoCloseCountdown.value = 0
+    // Auto-close after 3 seconds for correct answers (user can press Enter to skip)
     isEnterDisabled.value = false
+    startAutoCloseTimer(3)
   } else {
     // Wrong answer
     isCorrect.value = false
@@ -198,12 +228,13 @@ function submitAnswer() {
       level: newLevel
     })
 
-    // Disable button and Enter key for 3 seconds
+    // Disable button and Enter key for 3 seconds to prevent accidental clicks
     startButtonDisableTimer()
     isEnterDisabled.value = true
 
-    // Auto-close after 3 seconds for wrong answers
-    startAutoCloseTimer(3)
+    enterDisableTimer = setTimeout(() => {
+      isEnterDisabled.value = false
+    }, 3000)
   }
 
   showFeedback.value = true
@@ -323,13 +354,6 @@ function goHome() {
         <div class="text-h6">{{ currentCardIndex + 1 }} / {{ gameCards.length }}</div>
       </div>
 
-      <q-linear-progress
-        :value="(currentCardIndex + 1) / gameCards.length"
-        color="primary"
-        class="q-mb-md"
-        size="10px"
-      />
-
       <!-- Current Question -->
       <q-card
         class="q-mb-md"
@@ -341,12 +365,13 @@ function goHome() {
               color="primary"
               :label="`Level ${currentCard.level}`"
             />
-            <div class="text-caption text-grey-7">{{ currentCard.time.toFixed(1) }}s</div>
+            <div v-if="currentCard.time < 60" class="text-caption text-grey-7">{{ currentCard.time.toFixed(1) }}s</div>
           </div>
           <div class="text-h2 q-mb-md">{{ displayQuestion }}</div>
 
           <!-- Time Progress Bar -->
           <q-linear-progress
+            :key="currentCardIndex"
             :value="timeProgress"
             :color="timeProgress >= 1 ? 'negative' : 'primary'"
             size="8px"
@@ -359,7 +384,9 @@ function goHome() {
       <!-- Answer Input -->
       <q-input
         v-model.number="userAnswer"
-        type="number"
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
         outlined
         label="?"
         class="q-mb-md"
@@ -367,12 +394,18 @@ function goHome() {
         autofocus
         input-class="text-h4 text-center"
         ref="answerInput"
-        step="1"
         :rules="[val => val === null || Number.isInteger(val) || 'Nur ganze Zahlen']"
       >
       </q-input>
 
       <div class="row q-gutter-sm q-mb-md">
+        <q-btn
+          flat
+          color="grey"
+          size="xl"
+          @click="goHome"
+          icon="close"
+        />
         <q-btn
           color="primary"
           size="xl"
@@ -385,13 +418,6 @@ function goHome() {
             {{ isButtonDisabled ? `Warte ${buttonDisableCountdown}s...` : 'Antwort prüfen' }}
           </span>
         </q-btn>
-        <q-btn
-          flat
-          color="grey"
-          size="xl"
-          @click="goHome"
-          icon="close"
-        />
       </div>
 
       <!-- Feedback -->
@@ -400,43 +426,63 @@ function goHome() {
         persistent
         @keyup.enter="handleFeedbackEnter"
       >
-        <q-card>
-          <q-card-section class="text-center">
+        <q-card style="min-width: 350px">
+          <q-card-section
+            :class="['text-center q-pa-lg', isCorrect ? 'bg-positive' : 'bg-negative']"
+            class="text-white"
+          >
             <q-icon
               :name="isCorrect ? 'check_circle' : 'cancel'"
-              :color="isCorrect ? 'positive' : 'negative'"
-              size="80px"
+              color="white"
+              size="100px"
+              class="q-mb-md"
             />
-            <div class="text-h5 q-mt-md">
+            <div class="text-h3 text-weight-bold q-mb-sm">
               {{ isCorrect ? 'Richtig!' : 'Falsch!' }}
             </div>
             <div
-              v-if="!isCorrect"
-              class="text-h6 q-mt-sm"
-            >
-              {{ currentCard?.question }} = {{ currentCard?.answer }}
-            </div>
-            <div
               v-if="isCorrect"
-              class="text-subtitle1 q-mt-sm"
+              class="text-h5 q-mt-md"
             >
               +{{ lastPoints }} Punkte
             </div>
-            <div
-              v-if="!isCorrect && autoCloseCountdown > 0"
-              class="text-caption q-mt-sm text-grey-7"
-            >
-              Weiter in {{ autoCloseCountdown }}s...
+          </q-card-section>
+
+          <q-card-section
+            v-if="!isCorrect"
+            class="text-center q-pa-lg"
+          >
+            <div class="text-h4 q-mb-md text-grey-8">
+              {{ currentCard?.question.replace('x', '×') }}
+            </div>
+            <div class="text-h5">
+              <span class="text-negative text-weight-bold" style="text-decoration: line-through;">{{ userAnswer }}</span>
+              <q-icon name="arrow_forward" size="sm" class="q-mx-sm" />
+              <span class="text-positive text-weight-bold">{{ currentCard?.answer }}</span>
             </div>
           </q-card-section>
-          <q-card-actions align="center">
+
+          <q-card-actions
+            align="center"
+            class="q-pa-md"
+            :class="isCorrect ? 'bg-positive-1' : 'bg-negative-1'"
+          >
             <q-btn
-              color="primary"
-              label="Weiter (Enter)"
+              :color="isCorrect ? 'positive' : 'negative'"
+              :label="isButtonDisabled ? `Warte ${buttonDisableCountdown}s...` : 'Weiter (Enter)'"
               @click="closeFeedbackAndContinue"
               size="lg"
+              unelevated
+              class="full-width q-py-sm text-h6"
               autofocus
+              :disable="isButtonDisabled || isEnterDisabled"
             />
+            <div
+              v-if="autoCloseCountdown > 0"
+              class="text-caption q-mt-sm text-grey-7 full-width text-center"
+            >
+              Automatisch weiter in {{ autoCloseCountdown }}s...
+            </div>
           </q-card-actions>
         </q-card>
       </q-dialog>
