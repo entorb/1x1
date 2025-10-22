@@ -47,6 +47,27 @@ function goToHistory() {
 function goToStats() {
   router.push({ name: '/stats' })
 }
+
+function toggleSelect(option: number) {
+  const allSelected = selectOptions.every(opt => select.value.includes(opt))
+
+  if (allSelected && select.value.length > 1) {
+    // If all are selected and clicking one number, select only that number
+    select.value = [option]
+  } else if (select.value.includes(option)) {
+    // If already selected, deselect (but keep at least one selected)
+    if (select.value.length > 1) {
+      select.value = select.value.filter(n => n !== option)
+    }
+  } else {
+    // Not selected, add it
+    select.value = [...select.value, option].sort()
+  }
+}
+
+function selectAll() {
+  select.value = [...selectOptions]
+}
 </script>
 
 <template>
@@ -94,16 +115,32 @@ function goToStats() {
 
         <!-- Select Rows -->
         <div class="q-mb-md">
-          <div class="text-subtitle2 q-mb-sm">Auswahl (Welche Reihen?)</div>
-          <q-select
-            v-model="select"
-            :options="selectOptions"
-            multiple
-            outlined
-            use-chips
-            label="Reihen auswählen"
-            options-selected-class="text-primary"
-          />
+          <div class="row items-center q-mb-sm">
+            <div class="text-subtitle2 col">Auswahl (Welche Reihen?)</div>
+            <q-btn
+              flat
+              dense
+              color="primary"
+              size="sm"
+              label="Alle"
+              icon="select_all"
+              @click="selectAll"
+            />
+          </div>
+          <div class="row q-gutter-sm">
+            <q-btn
+              v-for="option in selectOptions"
+              :key="option"
+              :outline="!select.includes(option)"
+              :unelevated="select.includes(option)"
+              :color="select.includes(option) ? 'primary' : 'grey-5'"
+              size="lg"
+              class="col"
+              @click="toggleSelect(option)"
+            >
+              <div class="text-h6">{{ option }}</div>
+            </q-btn>
+          </div>
         </div>
 
         <!-- Focus Selection -->
