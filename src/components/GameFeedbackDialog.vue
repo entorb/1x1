@@ -71,7 +71,8 @@ function handleKeyup(event: KeyboardEvent) {
           <span
             class="text-negative text-weight-bold"
             style="text-decoration: line-through"
-          >{{ userAnswer }}</span>
+            >{{ userAnswer }}</span
+          >
           <q-icon
             name="arrow_forward"
             size="sm"

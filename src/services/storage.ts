@@ -45,7 +45,9 @@ export class StorageService {
 
     if (cards.length !== expectedCardCount) {
       // Reinitialize if card count is wrong
-      console.warn(`Card count mismatch: ${cards.length} !== ${expectedCardCount}. Reinitializing...`)
+      console.warn(
+        `Card count mismatch: ${cards.length} !== ${expectedCardCount}. Reinitializing...`
+      )
       this.initializeCards()
     }
   }
