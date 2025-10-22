@@ -77,20 +77,25 @@ function initializeGame() {
   }
 
   const allCards = StorageService.getCards()
-  const filteredCards = allCards.filter(card => {
+  const selectedCards = allCards.filter(card => {
     const [x, y] = card.question.split('x').map(Number)
-    return config.filter.includes(x) || config.filter.includes(y)
+    return config.select.includes(x) || config.select.includes(y)
   })
 
   // Select up to 10 random cards based on focus
-  gameCards.value = selectCards(filteredCards, config.focus, 10)
+  const pickedCards = selectCards(selectedCards, config.focus, 10)
+
+  gameCards.value = pickedCards
   gameStarted.value = true
+
   answerStartTime.value = Date.now()
   startTimeTracking()
 }
 
 function selectCards(cards: Card[], focus: FocusType, count: number): Card[] {
-  const weights = cards.map(card => {
+  // Make copies to avoid mutating the input arrays
+  const cardsCopy = [...cards]
+  const weights = cardsCopy.map(card => {
     if (focus === 'weak') {
       // Level 1=5, 2=4, 3=3, 4=2, 5=1
       return 6 - card.level
@@ -104,10 +109,14 @@ function selectCards(cards: Card[], focus: FocusType, count: number): Card[] {
     }
   })
 
-  const totalWeight = weights.reduce((sum, w) => sum + w, 0)
   const selected: Card[] = []
+  // IMPORTANT: Calculate loop count ONCE - don't use cardsCopy.length in condition
+  // because it changes as we splice!
+  const loopCount = Math.min(count, cardsCopy.length)
 
-  for (let i = 0; i < Math.min(count, cards.length); i++) {
+  for (let i = 0; i < loopCount; i++) {
+    // Recalculate totalWeight each iteration since we're removing weights
+    const totalWeight = weights.reduce((sum, w) => sum + w, 0)
     let random = Math.random() * totalWeight
     let selectedIndex = 0
 
@@ -119,9 +128,9 @@ function selectCards(cards: Card[], focus: FocusType, count: number): Card[] {
       }
     }
 
-    selected.push({ ...cards[selectedIndex] })
+    selected.push({ ...cardsCopy[selectedIndex] })
     // Remove selected card and its weight
-    cards.splice(selectedIndex, 1)
+    cardsCopy.splice(selectedIndex, 1)
     weights.splice(selectedIndex, 1)
   }
 
@@ -308,7 +317,7 @@ function finishGame() {
     // Save to history
     StorageService.addHistory({
       date: new Date().toISOString(),
-      filter: config.filter,
+      select: config.select,
       points: currentPoints.value,
       correctAnswers: correctAnswers.value
     })
@@ -318,7 +327,7 @@ function finishGame() {
       points: currentPoints.value,
       correctAnswers: correctAnswers.value,
       totalCards: gameCards.value.length,
-      filter: config.filter
+      select: config.select
     })
   }
 

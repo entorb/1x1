@@ -79,7 +79,7 @@ function goHome() {
           <q-item-label class="text-weight-bold">
             {{ formatDate(game.date) }}
           </q-item-label>
-          <q-item-label caption> Filter: {{ game.filter.join(', ') }} </q-item-label>
+          <q-item-label caption> Auswahl: {{ game.select.join(', ') }} </q-item-label>
         </q-item-section>
 
         <q-item-section side>

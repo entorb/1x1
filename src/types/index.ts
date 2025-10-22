@@ -8,13 +8,13 @@ export interface Card {
 }
 
 export interface GameConfig {
-  filter: number[] // Array of numbers 2-9, e.g. [2, 3, 5]
+  select: number[] // Array of numbers 2-9, e.g. [2, 3, 5]
   focus: FocusType // 'weak' or 'strong'
 }
 
 export interface GameHistory {
   date: string // ISO date string
-  filter: number[]
+  select: number[]
   points: number
   correctAnswers: number
 }
@@ -31,4 +31,11 @@ export interface Statistics {
   gamesPlayed: number
   totalPoints: number
   totalCorrectAnswers: number
+}
+
+export interface GameResult {
+  points: number
+  correctAnswers: number
+  totalCards: number
+  select: number[]
 }

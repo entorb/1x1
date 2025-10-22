@@ -38,6 +38,18 @@ export class StorageService {
     return cards
   }
 
+  // Verify and fix card data - ensures all 28 cards exist
+  static verifyAndFixCards(): void {
+    const cards = this.getCards()
+    const expectedCardCount = 28 // 3x3 to 9x9 with y <= x
+
+    if (cards.length !== expectedCardCount) {
+      // Reinitialize if card count is wrong
+      console.warn(`Card count mismatch: ${cards.length} !== ${expectedCardCount}. Reinitializing...`)
+      this.initializeCards()
+    }
+  }
+
   static updateCard(question: string, updates: Partial<Card>): void {
     const cards = this.getCards()
     const index = cards.findIndex(c => c.question === question)

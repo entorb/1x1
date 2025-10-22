@@ -13,9 +13,9 @@ const statistics = ref<Statistics>({
   totalCorrectAnswers: 0
 })
 
-const filter = ref<number[]>([3, 4, 5, 6, 7, 8, 9])
+const select = ref<number[]>([3, 4, 5, 6, 7, 8, 9])
 const focus = ref<FocusType>('weak')
-const filterOptions = [3, 4, 5, 6, 7, 8, 9]
+const selectOptions = [3, 4, 5, 6, 7, 8, 9]
 const focusOptions = [
   { label: 'Schwache', value: 'weak', icon: 'school' },
   { label: 'Starke', value: 'strong', icon: 'star' },
@@ -24,14 +24,15 @@ const focusOptions = [
 
 onMounted(() => {
   statistics.value = StorageService.getStatistics()
-  // Initialize cards if not already done
+  // Initialize cards if not already done and verify all cards exist
   StorageService.getCards()
+  StorageService.verifyAndFixCards()
 })
 
 function startGame() {
   // Save game config to session storage
   StorageService.setGameConfig({
-    filter: filter.value,
+    select: select.value,
     focus: focus.value
   })
 
@@ -91,12 +92,12 @@ function goToStats() {
           Einstellungen
         </div>
 
-        <!-- Filter Selection -->
+        <!-- Select Rows -->
         <div class="q-mb-md">
-          <div class="text-subtitle2 q-mb-sm">Filter (Welche Reihen?)</div>
+          <div class="text-subtitle2 q-mb-sm">Auswahl (Welche Reihen?)</div>
           <q-select
-            v-model="filter"
-            :options="filterOptions"
+            v-model="select"
+            :options="selectOptions"
             multiple
             outlined
             use-chips
@@ -137,7 +138,7 @@ function goToStats() {
       size="xl"
       class="full-width"
       @click="startGame"
-      :disable="filter.length === 0"
+      :disable="select.length === 0"
       icon="play_arrow"
     >
       <span class="text-h6">Spiel starten</span>
