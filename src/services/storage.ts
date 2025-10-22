@@ -126,6 +126,16 @@ export class StorageService {
     sessionStorage.removeItem(GAME_RESULT_KEY)
   }
 
+  // Reset all cards to level 1 and time 60
+  static resetCards(): void {
+    const cards = this.getCards()
+    cards.forEach(card => {
+      card.level = 1
+      card.time = 60
+    })
+    this.saveCards(cards)
+  }
+
   // Reset all data
   static resetAll(): void {
     localStorage.removeItem(CARDS_KEY)

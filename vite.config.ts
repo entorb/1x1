@@ -42,9 +42,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'android-chrome-192x192.png'],
       manifest: {
-        name: '1x1 Lern-App',
+        name: "Vyvit's 1x1",
         short_name: '1x1',
-        description: 'Lerne das 1x1 spielerisch mit Karteikarten',
+        description: "Vyvit's 1x1 training app",
         theme_color: '#1976d2',
         background_color: '#ffffff',
         display: 'standalone',

@@ -1,4 +1,12 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+interface Props {
+  smile?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  smile: false
+})
+</script>
 
 <template>
   <svg
@@ -53,8 +61,18 @@
         points="50,48 52,52 48,52"
         fill="#000000"
       />
-      <!-- Teeth -->
+      <!-- Smile (shown when smiling) -->
+      <path
+        v-if="smile"
+        d="M 42,54 Q 50,60 58,54"
+        stroke="#000000"
+        stroke-width="2"
+        fill="none"
+        stroke-linecap="round"
+      />
+      <!-- Teeth (shown when not smiling) -->
       <rect
+        v-else
         x="48"
         y="52"
         width="4"

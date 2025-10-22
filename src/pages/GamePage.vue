@@ -208,6 +208,12 @@ function submitAnswer() {
     const [x, y] = card.question.split('x').map(Number)
     const minXY = Math.min(x, y)
     lastPoints.value = minXY + (6 - card.level)
+
+    // Add 5 point bonus if last time < 60 and current time < last time
+    if (card.time < 60 && timeTaken.value < card.time) {
+      lastPoints.value += 5
+    }
+
     currentPoints.value += lastPoints.value
     correctAnswers.value++
 

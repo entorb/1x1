@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
 import type { FocusType, Statistics } from '@/types'
@@ -27,7 +27,26 @@ onMounted(() => {
   // Initialize cards if not already done and verify all cards exist
   StorageService.getCards()
   StorageService.verifyAndFixCards()
+
+  // Restore select and focus from session storage
+  const savedConfig = StorageService.getGameConfig()
+  if (savedConfig) {
+    select.value = savedConfig.select
+    focus.value = savedConfig.focus
+  }
 })
+
+// Watch for changes and save to session storage
+watch(
+  [select, focus],
+  () => {
+    StorageService.setGameConfig({
+      select: select.value,
+      focus: focus.value
+    })
+  },
+  { deep: true }
+)
 
 function startGame() {
   // Save game config to session storage
@@ -71,8 +90,8 @@ function selectAll() {
 </script>
 
 <template>
-  <q-page class="q-pa-md">
-    <div class="text-h4 text-center q-mb-md">1x1 Trainer</div>
+  <q-page class="q-pa-md page-container">
+    <div class="text-h5 text-center q-mb-md">Vyvit's 1x1</div>
 
     <!-- Mascot and Statistics -->
     <div class="row items-center justify-center q-mb-md mascot-container">
@@ -85,19 +104,19 @@ function selectAll() {
           flat
           bordered
         >
-          <q-card-section>
+          <q-card-section class="stats-section">
             <div class="row text-center q-gutter-sm justify-around">
               <div class="col-3">
                 <div class="text-caption">Spiele</div>
-                <div class="text-h5">{{ statistics.gamesPlayed }}</div>
+                <div class="text-h6">{{ statistics.gamesPlayed }}</div>
               </div>
               <div class="col-3">
                 <div class="text-caption">Punkte</div>
-                <div class="text-h5">{{ statistics.totalPoints }}</div>
+                <div class="text-h6">{{ statistics.totalPoints }}</div>
               </div>
               <div class="col-4">
                 <div class="text-caption">Richtige</div>
-                <div class="text-h5">{{ statistics.totalCorrectAnswers }}</div>
+                <div class="text-h6">{{ statistics.totalCorrectAnswers }}</div>
               </div>
             </div>
           </q-card-section>
@@ -107,16 +126,16 @@ function selectAll() {
 
     <!-- Game Configuration -->
     <q-card class="q-mb-md">
-      <q-card-section>
-        <div class="text-h6 q-mb-sm">
+      <q-card-section class="config-section">
+        <div class="text-subtitle1 q-mb-sm">
           <q-icon name="settings" />
           Einstellungen
         </div>
 
         <!-- Select Rows -->
-        <div class="q-mb-md">
-          <div class="row items-center q-mb-sm">
-            <div class="text-subtitle2 col">Auswahl (Welche Reihen?)</div>
+        <div class="q-mb-sm">
+          <div class="row items-center q-mb-xs">
+            <div class="text-subtitle2 col">Auswahl</div>
             <q-btn
               flat
               dense
@@ -127,29 +146,30 @@ function selectAll() {
               @click="selectAll"
             />
           </div>
-          <div class="row q-gutter-sm">
+          <div class="row q-gutter-xs number-buttons">
             <q-btn
               v-for="option in selectOptions"
               :key="option"
               :outline="!select.includes(option)"
               :unelevated="select.includes(option)"
               :color="select.includes(option) ? 'primary' : 'grey-5'"
-              size="lg"
+              size="md"
               class="col"
               @click="toggleSelect(option)"
             >
-              <div class="text-h6">{{ option }}</div>
+              <div class="text-body1">{{ option }}</div>
             </q-btn>
           </div>
         </div>
 
         <!-- Focus Selection -->
         <div>
-          <div class="text-subtitle2 q-mb-sm">Fokus</div>
+          <div class="text-subtitle2 q-mb-xs">Fokus</div>
           <q-select
             v-model="focus"
             :options="focusOptions"
             outlined
+            dense
             emit-value
             map-options
             label="Fokus auswählen"
@@ -172,46 +192,53 @@ function selectAll() {
     <!-- Start Game Button -->
     <q-btn
       color="positive"
-      size="xl"
-      class="full-width"
+      size="lg"
+      class="full-width q-mb-sm"
       @click="startGame"
       :disable="select.length === 0"
       icon="play_arrow"
     >
-      <span class="text-h6">Spiel starten</span>
+      <span class="text-body1">Spiel starten</span>
     </q-btn>
 
     <!-- Navigation Buttons -->
-    <div class="row q-gutter-sm q-mt-sm">
+    <div class="row q-gutter-sm">
       <q-btn
-        flat
+        unelevated
         color="primary"
-        class="col"
-        @click="goToHistory"
-        icon="history"
-        label="Spielverlauf"
-      />
-      <q-btn
-        flat
-        color="primary"
+        size="md"
         class="col"
         @click="goToStats"
         icon="bar_chart"
         label="Statistiken"
+      />
+      <q-btn
+        unelevated
+        color="primary"
+        size="md"
+        class="col"
+        @click="goToHistory"
+        icon="history"
+        label="Spielverlauf"
       />
     </div>
   </q-page>
 </template>
 
 <style scoped>
+.page-container {
+  max-width: 100%;
+  overflow-y: auto;
+}
+
 .mascot {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
 }
 
 .speech-bubble {
   position: relative;
-  border-radius: 16px;
+  border-radius: 12px;
   /* Using a variable for the border color for consistency */
   --bubble-border-color: rgba(0, 0, 0, 0.12);
   border-color: var(--bubble-border-color);
@@ -224,31 +251,51 @@ function selectAll() {
   border-style: solid;
 }
 
+.stats-section {
+  padding: 10px 12px;
+}
+
+.config-section {
+  padding: 12px;
+}
+
+.number-buttons {
+  min-height: 40px;
+}
+
 /* Small screens (mobile-first) */
 @media (max-width: 599.98px) {
+  .page-container {
+    padding: 12px !important;
+  }
+
   .mascot-container {
     flex-direction: column;
   }
+
   .mascot {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
+
   .speech-bubble {
     width: 100%;
   }
+
   /* Arrow Border */
   .speech-bubble::before {
-    top: -22px; /* 10px arrow + 1px border * 2 ? No, just border-width */
+    top: -18px;
     left: 50%;
     transform: translateX(-50%);
-    border-width: 11px; /* Larger for the border effect */
+    border-width: 9px;
     border-color: transparent transparent var(--bubble-border-color) transparent;
   }
+
   /* Arrow Fill */
   .speech-bubble::after {
-    top: -20px;
+    top: -16px;
     left: 50%;
     transform: translateX(-50%);
-    border-width: 10px;
+    border-width: 8px;
     border-color: transparent transparent white transparent;
   }
 }
@@ -256,26 +303,29 @@ function selectAll() {
 /* Larger screens */
 @media (min-width: 600px) {
   .mascot {
-    width: 150px;
-    height: 150px;
+    width: 130px;
+    height: 130px;
   }
+
   .speech-bubble {
-    margin-left: 20px;
+    margin-left: 15px;
   }
+
   /* Arrow Border */
   .speech-bubble::before {
-    left: -22px;
+    left: -18px;
     top: 50%;
     transform: translateY(-50%);
-    border-width: 11px;
+    border-width: 9px;
     border-color: transparent var(--bubble-border-color) transparent transparent;
   }
+
   /* Arrow Fill */
   .speech-bubble::after {
-    left: -20px;
+    left: -16px;
     top: 50%;
     transform: translateY(-50%);
-    border-width: 10px;
+    border-width: 8px;
     border-color: transparent white transparent transparent;
   }
 }

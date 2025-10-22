@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 import { StorageService } from '@/services/storage'
 import type { Card } from '@/types'
 
 const router = useRouter()
+const $q = useQuasar()
 const cards = ref<Card[]>([])
 
 const minTime = computed(() => {
@@ -80,6 +82,30 @@ function getCellStyle(y: number, x: number): Record<string, string> {
   }
 }
 
+function resetCards() {
+  $q.dialog({
+    title: 'Karten zurücksetzen',
+    message: 'Möchten Sie alle Karten auf Level 1 und Zeit 60s zurücksetzen?',
+    cancel: {
+      label: 'Abbrechen',
+      flat: true
+    },
+    ok: {
+      label: 'Zurücksetzen',
+      color: 'negative'
+    },
+    persistent: true
+  }).onOk(() => {
+    StorageService.resetCards()
+    cards.value = StorageService.getCards()
+    $q.notify({
+      type: 'positive',
+      message: 'Alle Karten wurden zurückgesetzt',
+      position: 'top'
+    })
+  })
+}
+
 function goHome() {
   router.push({ name: '/' })
 }
@@ -87,13 +113,15 @@ function goHome() {
 
 <template>
   <q-page class="q-pa-md">
-    <div class="row items-center q-mb-md">
-      <q-btn
-        flat
-        icon="arrow_back"
-        @click="goHome"
-      />
-      <div class="text-h5 q-ml-md">Statistiken</div>
+    <div class="row items-center justify-between q-mb-md">
+      <div class="row items-center">
+        <q-btn
+          flat
+          icon="arrow_back"
+          @click="goHome"
+        />
+        <div class="text-h5 q-ml-md">Statistiken</div>
+      </div>
     </div>
 
     <div
@@ -130,6 +158,13 @@ function goHome() {
               </div>
             </div>
           </div>
+          <q-btn
+            flat
+            color="negative"
+            icon="refresh"
+            label="Zurücksetzen"
+            @click="resetCards"
+          />
         </q-card-section>
       </q-card>
 
