@@ -2,12 +2,12 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
+import GameFeedbackDialog from '@/components/GameFeedbackDialog.vue'
 import type { Card, FocusType } from '@/types'
 
 const router = useRouter()
 
 const gameStarted = ref(false)
-const gameFinished = ref(false)
 const gameCards = ref<Card[]>([])
 const currentCardIndex = ref(0)
 const currentPoints = ref(0)
@@ -297,8 +297,6 @@ function nextCard() {
 }
 
 function finishGame() {
-  gameFinished.value = true
-
   // Clean up all timers
   stopTimeTracking()
   clearButtonDisableTimers()
@@ -314,10 +312,21 @@ function finishGame() {
       points: currentPoints.value,
       correctAnswers: correctAnswers.value
     })
+
+    // Save game result to session storage for GameOverPage
+    StorageService.setGameResult({
+      points: currentPoints.value,
+      correctAnswers: correctAnswers.value,
+      totalCards: gameCards.value.length,
+      filter: config.filter
+    })
   }
 
   // Update statistics
   StorageService.updateStatistics(currentPoints.value, correctAnswers.value)
+
+  // Navigate to game over page
+  router.push({ name: '/game-over' })
 }
 
 function goHome() {
@@ -338,7 +347,7 @@ function goHome() {
       <p>Spiel wird geladen...</p>
     </div>
 
-    <div v-else-if="!gameFinished">
+    <div v-else>
       <!-- Game Progress -->
       <div class="row justify-between items-center q-mb-md">
         <div class="text-h6">
@@ -422,123 +431,20 @@ function goHome() {
         </q-btn>
       </div>
 
-      <!-- Feedback -->
-      <q-dialog
-        v-model="showFeedback"
-        persistent
-        @keyup.enter="handleFeedbackEnter"
-      >
-        <q-card style="min-width: 350px">
-          <q-card-section
-            :class="[isCorrect ? 'bg-positive' : 'bg-negative']"
-            class="text-white text-center q-pa-lg"
-          >
-            <q-icon
-              :name="isCorrect ? 'check_circle' : 'cancel'"
-              color="white"
-              size="100px"
-              class="q-mb-md"
-            />
-            <div class="text-h3 text-weight-bold q-mb-sm">
-              {{ isCorrect ? 'Richtig!' : 'Falsch!' }}
-            </div>
-            <div
-              v-if="isCorrect"
-              class="text-h5 q-mt-md"
-            >
-              +{{ lastPoints }} Punkte
-            </div>
-          </q-card-section>
-
-          <q-card-section
-            v-if="!isCorrect"
-            class="text-center q-pa-lg"
-          >
-            <div class="text-h4 q-mb-md text-grey-8">
-              {{ currentCard?.question.replace('x', '×') }}
-            </div>
-            <div class="text-h5">
-              <span
-                class="text-negative text-weight-bold"
-                style="text-decoration: line-through"
-                >{{ userAnswer }}</span
-              >
-              <q-icon
-                name="arrow_forward"
-                size="sm"
-                class="q-mx-sm"
-              />
-              <span class="text-positive text-weight-bold">{{ currentCard?.answer }}</span>
-            </div>
-          </q-card-section>
-
-          <q-card-actions
-            align="center"
-            class="q-pa-md"
-            :class="isCorrect ? 'bg-positive-1' : 'bg-negative-1'"
-          >
-            <q-btn
-              :color="isCorrect ? 'positive' : 'negative'"
-              :label="isButtonDisabled ? `Warte ${buttonDisableCountdown}s...` : 'Weiter (Enter)'"
-              @click="closeFeedbackAndContinue"
-              size="lg"
-              unelevated
-              class="full-width q-py-sm text-h6"
-              autofocus
-              :disable="isButtonDisabled || isEnterDisabled"
-            />
-            <div
-              v-if="autoCloseCountdown > 0"
-              class="text-caption q-mt-sm text-grey-7 full-width text-center"
-            >
-              Automatisch weiter in {{ autoCloseCountdown }}s...
-            </div>
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-    </div>
-
-    <!-- Game Finished -->
-    <div
-      v-else
-      class="text-center"
-    >
-      <q-icon
-        name="emoji_events"
-        color="amber"
-        size="100px"
+      <!-- Game Feedback Dialog Component -->
+      <GameFeedbackDialog
+        :show="showFeedback"
+        :is-correct="isCorrect"
+        :current-card="currentCard"
+        :user-answer="userAnswer"
+        :last-points="lastPoints"
+        :auto-close-countdown="autoCloseCountdown"
+        :is-button-disabled="isButtonDisabled"
+        :button-disable-countdown="buttonDisableCountdown"
+        :is-enter-disabled="isEnterDisabled"
+        @continue="closeFeedbackAndContinue"
+        @handle-enter="handleFeedbackEnter"
       />
-      <div class="text-h4 q-mt-md">Spiel beendet!</div>
-
-      <q-card class="q-mt-lg">
-        <q-card-section>
-          <div class="text-h5 q-mb-md">Ergebnis</div>
-          <div class="row q-gutter-md justify-center">
-            <div>
-              <div class="text-caption">Punkte</div>
-              <div class="text-h4 text-primary">{{ currentPoints }}</div>
-            </div>
-            <div>
-              <div class="text-caption">Richtige Antworten</div>
-              <div class="text-h4 text-positive">{{ correctAnswers }}</div>
-            </div>
-            <div>
-              <div class="text-caption">Von</div>
-              <div class="text-h4">{{ gameCards.length }}</div>
-            </div>
-          </div>
-        </q-card-section>
-      </q-card>
-
-      <q-btn
-        color="primary"
-        size="xl"
-        class="full-width q-mt-lg"
-        @click="goHome"
-        icon="home"
-      >
-        <span class="text-h6">Zurück zur Startseite</span>
-      </q-btn>
     </div>
   </q-page>
 </template>
