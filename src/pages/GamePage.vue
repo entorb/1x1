@@ -4,6 +4,19 @@ import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
 import GameFeedbackDialog from '@/components/GameFeedbackDialog.vue'
 import type { Card, FocusType } from '@/types'
+import {
+  AUTO_SUBMIT_DIGITS,
+  AUTO_CLOSE_DURATION,
+  BUTTON_DISABLE_DURATION,
+  MIN_CARD_LEVEL,
+  MAX_CARD_LEVEL,
+  MAX_CARD_TIME,
+  SPEED_BONUS_POINTS,
+  MAX_CARDS_PER_GAME,
+  TIME_TRACKING_INTERVAL,
+  PROGRESS_BAR_MAX_RATIO,
+  COUNTDOWN_INTERVAL
+} from '@/config/constants'
 
 const router = useRouter()
 
@@ -39,11 +52,11 @@ const displayQuestion = computed(() => {
   return currentCard.value.question.replace('x', '\u00d7')
 })
 
-// Auto-submit after 2 digits
+// Auto-submit after configured digit count
 watch(userAnswer, newValue => {
   if (newValue !== null && newValue !== undefined && !showFeedback.value) {
     const valueStr = String(newValue)
-    if (valueStr.length >= 2) {
+    if (valueStr.length >= AUTO_SUBMIT_DIGITS) {
       submitAnswer()
     }
   }
@@ -82,8 +95,8 @@ function initializeGame() {
     return config.select.includes(x) || config.select.includes(y)
   })
 
-  // Select up to 10 random cards based on focus
-  const pickedCards = selectCards(selectedCards, config.focus, 10)
+  // Select cards based on focus
+  const pickedCards = selectCards(selectedCards, config.focus, MAX_CARDS_PER_GAME)
 
   gameCards.value = pickedCards
   gameStarted.value = true
@@ -97,14 +110,13 @@ function selectCards(cards: Card[], focus: FocusType, count: number): Card[] {
   const cardsCopy = [...cards]
   const weights = cardsCopy.map(card => {
     if (focus === 'weak') {
-      // Level 1=5, 2=4, 3=3, 4=2, 5=1
-      return 6 - card.level
+      // Level 1=highest weight, Level 5=lowest weight
+      return MAX_CARD_LEVEL + 1 - card.level
     } else if (focus === 'strong') {
-      // Level 1=1, 2=2, 3=3, 4=4, 5=5
+      // Level 5=highest weight, Level 1=lowest weight
       return card.level
     } else {
       // slow: prioritize cards with higher time (slower)
-      // Normalize time to weight (higher time = higher weight)
       return card.time
     }
   })
@@ -145,10 +157,10 @@ function startTimeTracking() {
   timeTrackingInterval = setInterval(() => {
     elapsedTime.value = (Date.now() - answerStartTime.value) / 1000
     if (currentCard.value) {
-      const cappedTime = Math.min(currentCard.value.time, 60)
-      timeProgress.value = Math.min(elapsedTime.value / cappedTime, 1.5)
+      const cappedTime = Math.min(currentCard.value.time, MAX_CARD_TIME)
+      timeProgress.value = Math.min(elapsedTime.value / cappedTime, PROGRESS_BAR_MAX_RATIO)
     }
-  }, 100) // Update every 100ms for smooth progress
+  }, TIME_TRACKING_INTERVAL)
 }
 
 function stopTimeTracking() {
@@ -160,19 +172,19 @@ function stopTimeTracking() {
 
 function startButtonDisableTimer() {
   isButtonDisabled.value = true
-  buttonDisableCountdown.value = 3
+  buttonDisableCountdown.value = BUTTON_DISABLE_DURATION / 1000
 
   buttonDisableCountdownInterval = setInterval(() => {
     buttonDisableCountdown.value--
     if (buttonDisableCountdown.value <= 0) {
       clearInterval(buttonDisableCountdownInterval!)
     }
-  }, 1000)
+  }, COUNTDOWN_INTERVAL)
 
   buttonDisableTimer = setTimeout(() => {
     isButtonDisabled.value = false
     buttonDisableCountdown.value = 0
-  }, 3000)
+  }, BUTTON_DISABLE_DURATION)
 }
 
 function clearButtonDisableTimers() {
@@ -207,44 +219,44 @@ function submitAnswer() {
     isCorrect.value = true
     const [x, y] = card.question.split('x').map(Number)
     const minXY = Math.min(x, y)
-    lastPoints.value = minXY + (6 - card.level)
+    lastPoints.value = minXY + (MAX_CARD_LEVEL + 1 - card.level)
 
-    // Add 5 point bonus if last time < 60 and current time < last time
-    if (card.time < 60 && timeTaken.value < card.time) {
-      lastPoints.value += 5
+    // Add speed bonus if last time < MAX_CARD_TIME and current time < last time
+    if (card.time < MAX_CARD_TIME && timeTaken.value < card.time) {
+      lastPoints.value += SPEED_BONUS_POINTS
     }
 
     currentPoints.value += lastPoints.value
     correctAnswers.value++
 
     // Update card in storage
-    const newLevel = Math.min(card.level + 1, 5)
+    const newLevel = Math.min(card.level + 1, MAX_CARD_LEVEL)
     StorageService.updateCard(card.question, {
       level: newLevel,
       time: timeTaken.value
     })
 
-    // Auto-close after 3 seconds for correct answers (user can press Enter to skip)
+    // Auto-close after configured duration for correct answers
     isEnterDisabled.value = false
-    startAutoCloseTimer(3)
+    startAutoCloseTimer(AUTO_CLOSE_DURATION / 1000)
   } else {
     // Wrong answer
     isCorrect.value = false
     lastPoints.value = 0
 
     // Update card in storage
-    const newLevel = Math.max(card.level - 1, 1)
+    const newLevel = Math.max(card.level - 1, MIN_CARD_LEVEL)
     StorageService.updateCard(card.question, {
       level: newLevel
     })
 
-    // Disable button and Enter key for 3 seconds to prevent accidental clicks
+    // Disable button and Enter key to prevent accidental clicks
     startButtonDisableTimer()
     isEnterDisabled.value = true
 
     enterDisableTimer = setTimeout(() => {
       isEnterDisabled.value = false
-    }, 3000)
+    }, BUTTON_DISABLE_DURATION)
   }
 
   showFeedback.value = true
@@ -254,13 +266,13 @@ function startAutoCloseTimer(seconds: number) {
   clearTimers()
   autoCloseCountdown.value = seconds
 
-  // Update countdown every second
+  // Update countdown
   countdownInterval = setInterval(() => {
     autoCloseCountdown.value--
     if (autoCloseCountdown.value <= 0) {
       clearInterval(countdownInterval!)
     }
-  }, 1000)
+  }, COUNTDOWN_INTERVAL)
 
   // Auto-close after the specified time
   autoCloseTimer = setTimeout(() => {
@@ -289,7 +301,9 @@ function handleFeedbackEnter() {
 function closeFeedbackAndContinue() {
   clearTimers()
   showFeedback.value = false
-  nextCard()
+  nextTick(() => {
+    nextCard()
+  })
 }
 
 function nextCard() {
@@ -306,7 +320,9 @@ function nextCard() {
     answerStartTime.value = Date.now()
     startTimeTracking()
     nextTick(() => {
-      answerInput.value?.focus()
+      nextTick(() => {
+        answerInput.value?.focus()
+      })
     })
   }
 }
@@ -350,10 +366,10 @@ function goHome() {
 </script>
 
 <template>
-  <q-page class="q-pa-md">
+  <q-page class="game-page q-pa-md">
     <div
       v-if="!gameStarted"
-      class="text-center"
+      class="text-center q-mt-xl"
     >
       <q-spinner
         color="primary"
@@ -364,46 +380,48 @@ function goHome() {
 
     <div v-else>
       <!-- Game Progress -->
-      <div class="row justify-between items-center q-mb-md">
-        <div class="text-h6">
+      <div class="row justify-between items-center q-mb-md progress-header">
+        <div class="text-h6 points-display">
           <q-icon
             name="emoji_events"
             color="amber"
+            size="24px"
           />
-          {{ currentPoints }} Punkte
+          {{ currentPoints }}
         </div>
-        <div class="text-h6">{{ currentCardIndex + 1 }} / {{ gameCards.length }}</div>
+        <div class="text-h6 card-counter">{{ currentCardIndex + 1 }} / {{ gameCards.length }}</div>
       </div>
 
       <!-- Current Question -->
       <q-card
-        class="q-mb-md"
+        class="q-mb-md question-card"
         v-if="currentCard"
       >
-        <q-card-section class="text-center">
-          <div class="row justify-between items-center q-mb-sm">
+        <q-card-section class="text-center question-section">
+          <div class="row justify-between items-center q-mb-sm card-info">
             <q-badge
               color="primary"
               :label="`Level ${currentCard.level}`"
+              class="level-badge"
             />
             <div
-              v-if="currentCard.time < 60"
-              class="text-caption text-grey-7"
+              v-if="currentCard.time < MAX_CARD_TIME"
+              class="text-caption text-grey-7 time-display"
             >
               {{ currentCard.time.toFixed(1) }}s
             </div>
           </div>
-          <div class="text-h2 q-mb-md">{{ displayQuestion }}</div>
+          <div class="question-text">{{ displayQuestion }}</div>
 
           <!-- Time Progress Bar -->
           <q-linear-progress
             :key="currentCardIndex"
             :value="timeProgress"
             :color="timeProgress >= 1 ? 'negative' : 'primary'"
-            size="8px"
-            class="q-mt-md"
+            size="10px"
+            class="q-mt-md progress-bar"
+            rounded
           />
-          <div class="text-caption text-grey-7 q-mt-xs">{{ elapsedTime.toFixed(1) }}s</div>
         </q-card-section>
       </q-card>
 
@@ -414,34 +432,33 @@ function goHome() {
         inputmode="numeric"
         pattern="[0-9]*"
         outlined
-        label="?"
-        class="q-mb-md"
+        class="q-mb-md answer-input"
         @keyup.enter="submitAnswer"
         autofocus
-        input-class="text-h4 text-center"
+        input-class="text-h3 text-center answer-text"
         ref="answerInput"
-        :rules="[val => val === null || Number.isInteger(val) || 'Nur ganze Zahlen']"
-      >
-      </q-input>
+        :rules="[val => val === null || Number.isInteger(val)]"
+      />
 
-      <div class="row q-gutter-sm q-mb-md">
+      <div class="row q-gutter-sm q-mb-md action-buttons">
         <q-btn
           flat
           color="grey"
-          size="xl"
+          size="lg"
           @click="goHome"
           icon="close"
+          class="cancel-btn"
         />
         <q-btn
           color="primary"
-          size="xl"
-          class="col"
+          size="lg"
+          class="col submit-btn"
           @click="submitAnswer"
           :disable="userAnswer === null || userAnswer === undefined || isButtonDisabled"
           icon="check"
         >
-          <span class="text-h6">
-            {{ isButtonDisabled ? `Warte ${buttonDisableCountdown}s...` : 'Antwort prüfen' }}
+          <span class="button-label">
+            {{ isButtonDisabled ? `Warte ${buttonDisableCountdown}s...` : 'Prüfen' }}
           </span>
         </q-btn>
       </div>
@@ -463,3 +480,142 @@ function goHome() {
     </div>
   </q-page>
 </template>
+
+<style scoped>
+.game-page {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.progress-header {
+  padding: 0 4px;
+}
+
+.points-display,
+.card-counter {
+  font-weight: 600;
+}
+
+.question-card {
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+}
+
+.question-section {
+  padding: 20px 16px;
+}
+
+.question-text {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin: 16px 0;
+  line-height: 1.2;
+}
+
+.level-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 10px;
+}
+
+.time-display {
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.progress-bar {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.answer-input {
+  font-size: 1rem;
+}
+
+.answer-text {
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.action-buttons .cancel-btn {
+  min-width: 56px;
+  height: 56px;
+}
+
+.action-buttons .submit-btn {
+  height: 56px;
+  font-weight: 600;
+}
+
+.button-label {
+  font-size: 1rem;
+}
+
+/* iPhone 7 and small screens optimization */
+@media (max-width: 599.98px) {
+  .game-page {
+    padding: 10px !important;
+  }
+
+  .progress-header {
+    margin-bottom: 10px;
+  }
+
+  .points-display {
+    font-size: 1.1rem;
+  }
+
+  .card-counter {
+    font-size: 1rem;
+  }
+
+  .question-section {
+    padding: 16px 12px;
+  }
+
+  .question-text {
+    font-size: 2.75rem;
+    margin: 12px 0;
+  }
+
+  .level-badge {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+  }
+
+  .time-display {
+    font-size: 0.75rem;
+  }
+
+  .answer-input {
+    font-size: 0.9rem;
+  }
+
+  .answer-text {
+    font-size: 0.75rem;
+  }
+
+  .action-buttons {
+    gap: 8px;
+  }
+
+  .action-buttons .cancel-btn {
+    min-width: 52px;
+    height: 52px;
+  }
+
+  .action-buttons .submit-btn {
+    height: 52px;
+  }
+
+  .button-label {
+    font-size: 0.9rem;
+  }
+}
+
+/* Tablet and larger */
+@media (min-width: 600px) {
+  .question-text {
+    font-size: 4rem;
+  }
+}
+</style>

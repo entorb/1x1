@@ -1,10 +1,14 @@
 import type { Card, GameHistory, Statistics, GameConfig, GameResult } from '@/types'
+import { MIN_CARD_LEVEL, MAX_CARD_TIME, MIN_CARD_TIME, SELECT_OPTIONS } from '@/config/constants'
 
 export const CARDS_KEY = '1x1-cards'
 export const HISTORY_KEY = '1x1-history'
 export const STATS_KEY = '1x1-stats'
 export const GAME_CONFIG_KEY = '1x1-game-config'
 export const GAME_RESULT_KEY = '1x1-game-result'
+
+// Expected card count for 3x3 to 9x9 where y <= x
+const EXPECTED_CARD_COUNT = 28
 
 export class StorageService {
   // Cards
@@ -22,15 +26,18 @@ export class StorageService {
 
   static initializeCards(): Card[] {
     const cards: Card[] = []
-    // Generate cards for 3x3 to 9x9
-    // First number is always the lower one
-    for (let x = 3; x <= 9; x++) {
-      for (let y = 3; y <= x; y++) {
+    // Generate cards for all multiplication table combinations
+    // where y <= x (to avoid duplicates like 3x4 and 4x3)
+    const minTable = Math.min(...SELECT_OPTIONS)
+    const maxTable = Math.max(...SELECT_OPTIONS)
+
+    for (let x = minTable; x <= maxTable; x++) {
+      for (let y = minTable; y <= x; y++) {
         cards.push({
           question: `${y}x${x}`,
           answer: x * y,
-          level: 1,
-          time: 60
+          level: MIN_CARD_LEVEL,
+          time: MAX_CARD_TIME
         })
       }
     }
@@ -38,15 +45,14 @@ export class StorageService {
     return cards
   }
 
-  // Verify and fix card data - ensures all 28 cards exist
+  // Verify and fix card data - ensures all expected cards exist
   static verifyAndFixCards(): void {
     const cards = this.getCards()
-    const expectedCardCount = 28 // 3x3 to 9x9 with y <= x
 
-    if (cards.length !== expectedCardCount) {
+    if (cards.length !== EXPECTED_CARD_COUNT) {
       // Reinitialize if card count is wrong
       console.warn(
-        `Card count mismatch: ${cards.length} !== ${expectedCardCount}. Reinitializing...`
+        `Card count mismatch: ${cards.length} !== ${EXPECTED_CARD_COUNT}. Reinitializing...`
       )
       this.initializeCards()
     }
@@ -56,9 +62,9 @@ export class StorageService {
     const cards = this.getCards()
     const index = cards.findIndex(c => c.question === question)
     if (index !== -1) {
-      // Clamp time between 0.1s and 60s
+      // Clamp time within allowed range
       if (updates.time !== undefined) {
-        updates.time = Math.max(0.1, Math.min(60, updates.time))
+        updates.time = Math.max(MIN_CARD_TIME, Math.min(MAX_CARD_TIME, updates.time))
       }
       cards[index] = { ...cards[index], ...updates }
       this.saveCards(cards)
@@ -126,12 +132,12 @@ export class StorageService {
     sessionStorage.removeItem(GAME_RESULT_KEY)
   }
 
-  // Reset all cards to level 1 and time 60
+  // Reset all cards to default level and time
   static resetCards(): void {
     const cards = this.getCards()
     cards.forEach(card => {
-      card.level = 1
-      card.time = 60
+      card.level = MIN_CARD_LEVEL
+      card.time = MAX_CARD_TIME
     })
     this.saveCards(cards)
   }

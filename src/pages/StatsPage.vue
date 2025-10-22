@@ -1,25 +1,44 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { StorageService } from '@/services/storage'
 import type { Card } from '@/types'
+import {
+  MIN_CARD_TIME,
+  MAX_CARD_TIME,
+  LEVEL_COLORS,
+  TIME_COLORS,
+  TIME_COLOR_THRESHOLDS,
+  BG_COLORS
+} from '@/config/constants'
 
 const router = useRouter()
 const $q = useQuasar()
 const cards = ref<Card[]>([])
 
 const minTime = computed(() => {
-  if (cards.value.length === 0) return 0.1
-  return Math.max(0.1, Math.min(...cards.value.map(c => c.time)))
+  if (cards.value.length === 0) return MIN_CARD_TIME
+  return Math.max(MIN_CARD_TIME, Math.min(...cards.value.map(c => c.time)))
 })
 const maxTime = computed(() => {
-  if (cards.value.length === 0) return 60
-  return Math.min(60, Math.max(...cards.value.map(c => c.time)))
+  if (cards.value.length === 0) return MAX_CARD_TIME
+  return Math.min(MAX_CARD_TIME, Math.max(...cards.value.map(c => c.time)))
 })
+
+function handleKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    goHome()
+  }
+}
 
 onMounted(() => {
   cards.value = StorageService.getCards()
+  window.addEventListener('keydown', handleKeyDown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown)
 })
 
 function getCardCountByLevel(level: number): number {
@@ -31,15 +50,7 @@ function getCard(y: number, x: number): Card | undefined {
 }
 
 function getLevelBackgroundColor(level: number): string {
-  // Red (level 1) to Green (level 5)
-  const colors = [
-    '#ffcdd2', // red-100
-    '#ffe0b2', // orange-100
-    '#fff9c4', // yellow-100
-    '#dcedc8', // light-green-100
-    '#c8e6c9' // green-100
-  ]
-  return colors[level - 1] || '#f5f5f5'
+  return LEVEL_COLORS[level as keyof typeof LEVEL_COLORS] || BG_COLORS.disabled
 }
 
 function getTimeTextColor(time: number): string {
@@ -49,29 +60,29 @@ function getTimeTextColor(time: number): string {
   const max = maxTime.value
   const range = max - min
 
-  if (range === 0) return '#2e7d32' // green-800
+  if (range === 0) return TIME_COLORS.veryFast
 
   const normalized = (time - min) / range
 
-  // Green (fast) to Red (slow)
-  if (normalized < 0.2) return '#2e7d32' // green-800
-  if (normalized < 0.4) return '#558b2f' // light-green-800
-  if (normalized < 0.6) return '#f57f17' // yellow-800
-  if (normalized < 0.8) return '#e65100' // orange-900
-  return '#c62828' // red-800
+  // Green (fast) to Red (slow) using thresholds
+  if (normalized < TIME_COLOR_THRESHOLDS.veryFast) return TIME_COLORS.veryFast
+  if (normalized < TIME_COLOR_THRESHOLDS.fast) return TIME_COLORS.fast
+  if (normalized < TIME_COLOR_THRESHOLDS.medium) return TIME_COLORS.medium
+  if (normalized < TIME_COLOR_THRESHOLDS.slow) return TIME_COLORS.slow
+  return TIME_COLORS.verySlow
 }
 
 function getCellStyle(y: number, x: number): Record<string, string> {
   if (y > x) {
     return {
-      backgroundColor: '#f5f5f5'
+      backgroundColor: BG_COLORS.disabled
     }
   }
 
   const card = getCard(y, x)
   if (!card) {
     return {
-      backgroundColor: '#f5f5f5',
+      backgroundColor: BG_COLORS.disabled,
       color: '#666666'
     }
   }
@@ -484,47 +495,85 @@ function goHome() {
   color: #424242;
 }
 
-/* Mobile Responsive */
+/* iPhone 7 and small screens optimization */
 @media (max-width: 599.98px) {
   .page-container {
-    padding: 8px !important;
+    padding: 10px !important;
   }
 
   .cards-grid {
-    gap: 4px;
-    grid-template-columns: 30px repeat(7, 1fr);
-    min-width: 450px;
+    gap: 3px;
+    grid-template-columns: 28px repeat(7, 1fr);
+    min-width: 360px;
   }
 
   .grid-header {
-    padding: 4px;
-    font-size: 0.75rem;
-  }
-
-  .grid-cell {
-    min-height: 60px;
-    border-width: 1.5px;
-    border-radius: 6px;
-  }
-
-  .cell-question {
-    font-size: 0.6rem;
-  }
-
-  .cell-answer {
-    font-size: 0.95rem;
-  }
-
-  .cell-stats {
-    font-size: 0.6rem;
-  }
-
-  .legend-chip {
+    padding: 2px;
     font-size: 0.7rem;
   }
 
+  .grid-cell {
+    min-height: 54px;
+    border-width: 1px;
+    border-radius: 4px;
+  }
+
+  .cell-content {
+    padding: 3px;
+    gap: 1px;
+  }
+
+  .cell-question {
+    font-size: 0.55rem;
+  }
+
+  .cell-answer {
+    font-size: 0.85rem;
+    margin: 1px 0;
+  }
+
+  .cell-stats {
+    font-size: 0.55rem;
+    margin-top: 1px;
+  }
+
+  .legend {
+    padding: 10px;
+  }
+
+  .legend-chip {
+    font-size: 0.65rem;
+    padding: 4px 8px;
+  }
+
   .pwa-instructions {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .level-card,
+  .grid-card,
+  .pwa-info-card {
+    border-radius: 10px;
+  }
+
+  .level-stats .col {
+    padding: 0 2px;
+  }
+
+  .level-badge {
+    border-radius: 6px;
+  }
+
+  .level-badge .q-card-section {
+    padding: 6px 4px;
+  }
+
+  .level-badge .text-caption {
+    font-size: 0.65rem;
+  }
+
+  .level-badge .text-h5 {
+    font-size: 1.1rem;
   }
 }
 

@@ -5,7 +5,7 @@ describe('Navigation Smoke Tests', () => {
 
   it('should navigate from Home to History and back', () => {
     // Verify we're on the home page
-    cy.contains('1x1 Trainer').should('be.visible')
+    cy.contains("Vyvit's 1x1").should('be.visible')
 
     // Navigate to History page
     cy.contains('button', 'Spielverlauf').click()
@@ -19,12 +19,12 @@ describe('Navigation Smoke Tests', () => {
 
     // Verify we're back on home page
     cy.url().should('not.include', '/history')
-    cy.contains('1x1 Trainer').should('be.visible')
+    cy.contains("Vyvit's 1x1").should('be.visible')
   })
 
   it('should navigate from Home to Statistics and back', () => {
     // Verify we're on the home page
-    cy.contains('1x1 Trainer').should('be.visible')
+    cy.contains("Vyvit's 1x1").should('be.visible')
 
     // Navigate to Stats page
     cy.contains('button', 'Statistiken').click()
@@ -38,12 +38,12 @@ describe('Navigation Smoke Tests', () => {
 
     // Verify we're back on home page
     cy.url().should('not.include', '/stats')
-    cy.contains('1x1 Trainer').should('be.visible')
+    cy.contains("Vyvit's 1x1").should('be.visible')
   })
 
   it('should navigate to all pages in sequence', () => {
     // Start at home
-    cy.contains('1x1 Trainer').should('be.visible')
+    cy.contains("Vyvit's 1x1").should('be.visible')
 
     // Go to History
     cy.contains('button', 'Spielverlauf').click()
@@ -56,6 +56,6 @@ describe('Navigation Smoke Tests', () => {
     cy.go('back')
 
     // Verify back at home
-    cy.contains('1x1 Trainer').should('be.visible')
+    cy.contains("Vyvit's 1x1").should('be.visible')
   })
 })

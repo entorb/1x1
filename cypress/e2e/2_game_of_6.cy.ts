@@ -16,7 +16,7 @@ describe('Full Game Flow', () => {
 
   it('should play a complete game with 1 wrong and 6 correct answers', () => {
     // Verify we're on the home page
-    cy.contains('1x1 Trainer').should('be.visible')
+    cy.contains("Vyvit's 1x1").should('be.visible')
 
     // Select only [6] - since all are selected by default, clicking 6 will select only 6
     cy.contains('button', '6').click()
@@ -43,7 +43,7 @@ describe('Full Game Flow', () => {
     }
 
     // Answer first question WRONG
-    cy.get('.text-h2')
+    cy.get('.question-text')
       .invoke('text')
       .then(questionText => {
         const { answer } = parseQuestion(questionText)
@@ -55,13 +55,17 @@ describe('Full Game Flow', () => {
         // Auto-submit happens after 2 digits, wait for wrong answer feedback
         cy.contains('Falsch!', { timeout: 5000 }).should('be.visible')
 
+        // Wait for button to be enabled (3 second disable timer)
+        // eslint-disable-next-line cypress/no-unnecessary-waiting
+        cy.wait(3100)
+
         // Click continue to next question
-        cy.contains('button', 'Weiter').click()
+        cy.contains('button', /Weiter|Warte/).click()
       })
 
     // Answer next 6 questions CORRECTLY
     for (let i = 0; i < 6; i++) {
-      cy.get('.text-h2')
+      cy.get('.question-text')
         .invoke('text')
         .then(questionText => {
           const { answer } = parseQuestion(questionText)
@@ -80,20 +84,20 @@ describe('Full Game Flow', () => {
 
     // After all questions, should be on game over page
     cy.url({ timeout: 10000 }).should('include', '/game-over')
-    cy.contains('Spiel beendet').should('be.visible')
+    cy.contains('Spiel beendet!').should('be.visible')
 
     // Verify statistics show 6 correct answers out of 7 total
-    cy.contains('Richtige Antworten').should('be.visible')
-    cy.contains('.text-h4', '6').should('be.visible')
+    cy.contains('Richtige').should('be.visible')
+    cy.contains('.stat-value', '6').should('be.visible')
     cy.contains('Von').should('be.visible')
-    cy.contains('.text-h4', '7').should('be.visible')
+    cy.contains('.stat-value', '7').should('be.visible')
 
     // Navigate back to home
     cy.contains('button', 'Zurück zur Startseite').click()
 
     // Verify we're back on home page
     cy.url().should('not.include', '/game-over')
-    cy.contains('1x1 Trainer').should('be.visible')
+    cy.contains("Vyvit's 1x1").should('be.visible')
 
     // Verify statistics updated (1 game played)
     cy.contains('Spiele').should('be.visible')

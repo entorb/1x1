@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
 import type { FocusType, Statistics } from '@/types'
 import GroundhogMascot from '@/components/GroundhogMascot.vue'
+import { SELECT_OPTIONS, DEFAULT_SELECT, FOCUS_OPTIONS } from '@/config/constants'
 
 const router = useRouter()
 
@@ -13,14 +14,10 @@ const statistics = ref<Statistics>({
   totalCorrectAnswers: 0
 })
 
-const select = ref<number[]>([3, 4, 5, 6, 7, 8, 9])
+const select = ref<number[]>(DEFAULT_SELECT)
 const focus = ref<FocusType>('weak')
-const selectOptions = [3, 4, 5, 6, 7, 8, 9]
-const focusOptions = [
-  { label: 'Schwache', value: 'weak', icon: 'school' },
-  { label: 'Starke', value: 'strong', icon: 'star' },
-  { label: 'Langsame', value: 'slow', icon: 'schedule' }
-]
+const selectOptions = SELECT_OPTIONS
+const focusOptions = FOCUS_OPTIONS
 
 onMounted(() => {
   statistics.value = StorageService.getStatistics()
@@ -74,18 +71,12 @@ function toggleSelect(option: number) {
     // If all are selected and clicking one number, select only that number
     select.value = [option]
   } else if (select.value.includes(option)) {
-    // If already selected, deselect (but keep at least one selected)
-    if (select.value.length > 1) {
-      select.value = select.value.filter(n => n !== option)
-    }
+    // If already selected, select all
+    select.value = [...selectOptions]
   } else {
     // Not selected, add it
     select.value = [...select.value, option].sort()
   }
-}
-
-function selectAll() {
-  select.value = [...selectOptions]
 }
 </script>
 
@@ -134,18 +125,7 @@ function selectAll() {
 
         <!-- Select Rows -->
         <div class="q-mb-sm">
-          <div class="row items-center q-mb-xs">
-            <div class="text-subtitle2 col">Auswahl</div>
-            <q-btn
-              flat
-              dense
-              color="primary"
-              size="sm"
-              label="Alle"
-              icon="select_all"
-              @click="selectAll"
-            />
-          </div>
+          <div class="text-subtitle2 q-mb-xs">Auswahl</div>
           <div class="row q-gutter-xs number-buttons">
             <q-btn
               v-for="option in selectOptions"
@@ -229,6 +209,7 @@ function selectAll() {
 .page-container {
   max-width: 100%;
   overflow-y: auto;
+  padding: 12px;
 }
 
 .mascot {
@@ -239,9 +220,9 @@ function selectAll() {
 .speech-bubble {
   position: relative;
   border-radius: 12px;
-  /* Using a variable for the border color for consistency */
   --bubble-border-color: rgba(0, 0, 0, 0.12);
   border-color: var(--bubble-border-color);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .speech-bubble::before,
@@ -256,21 +237,26 @@ function selectAll() {
 }
 
 .config-section {
-  padding: 12px;
+  padding: 14px;
 }
 
 .number-buttons {
-  min-height: 40px;
+  min-height: 48px;
 }
 
-/* Small screens (mobile-first) */
+.number-buttons .col {
+  min-width: 44px;
+}
+
+/* Small screens (iPhone 7: 375px × 667px) */
 @media (max-width: 599.98px) {
   .page-container {
-    padding: 12px !important;
+    padding: 10px !important;
   }
 
   .mascot-container {
     flex-direction: column;
+    margin-bottom: 12px;
   }
 
   .mascot {
@@ -297,6 +283,30 @@ function selectAll() {
     transform: translateX(-50%);
     border-width: 8px;
     border-color: transparent transparent white transparent;
+  }
+
+  .stats-section {
+    padding: 8px 10px;
+  }
+
+  .stats-section .text-h6 {
+    font-size: 1.1rem;
+  }
+
+  .stats-section .text-caption {
+    font-size: 0.7rem;
+  }
+
+  .config-section {
+    padding: 12px;
+  }
+
+  .number-buttons {
+    margin: 0 -2px;
+  }
+
+  .number-buttons .col {
+    padding: 0 2px;
   }
 }
 
