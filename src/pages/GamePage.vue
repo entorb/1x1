@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
-import type { Card, FocusType, GameConfig } from '@/types'
+import type { Card, FocusType } from '@/types'
 
 const router = useRouter()
-const route = useRoute()
 
 const gameStarted = ref(false)
 const gameFinished = ref(false)
@@ -41,7 +40,7 @@ const displayQuestion = computed(() => {
 })
 
 // Auto-submit after 2 digits
-watch(userAnswer, (newValue) => {
+watch(userAnswer, newValue => {
   if (newValue !== null && newValue !== undefined && !showFeedback.value) {
     const valueStr = String(newValue)
     if (valueStr.length >= 2) {
@@ -68,17 +67,13 @@ onUnmounted(() => {
 })
 
 function initializeGame() {
-  const filterParam = route.query.filter as string
-  const focusParam = route.query.focus as FocusType
+  // Read game config from session storage
+  const config = StorageService.getGameConfig()
 
-  if (!filterParam) {
+  if (!config) {
+    // No config found, redirect to home
     router.push({ name: '/' })
     return
-  }
-
-  const config: GameConfig = {
-    filter: filterParam.split(',').map(Number),
-    focus: focusParam || 'weak'
   }
 
   const allCards = StorageService.getCards()
@@ -308,16 +303,18 @@ function finishGame() {
   stopTimeTracking()
   clearButtonDisableTimers()
 
-  const filterParam = route.query.filter as string
-  const filter = filterParam.split(',').map(Number)
+  // Read game config from session storage
+  const config = StorageService.getGameConfig()
 
-  // Save to history
-  StorageService.addHistory({
-    date: new Date().toISOString(),
-    filter,
-    points: currentPoints.value,
-    correctAnswers: correctAnswers.value
-  })
+  if (config) {
+    // Save to history
+    StorageService.addHistory({
+      date: new Date().toISOString(),
+      filter: config.filter,
+      points: currentPoints.value,
+      correctAnswers: correctAnswers.value
+    })
+  }
 
   // Update statistics
   StorageService.updateStatistics(currentPoints.value, correctAnswers.value)
@@ -365,7 +362,12 @@ function goHome() {
               color="primary"
               :label="`Level ${currentCard.level}`"
             />
-            <div v-if="currentCard.time < 60" class="text-caption text-grey-7">{{ currentCard.time.toFixed(1) }}s</div>
+            <div
+              v-if="currentCard.time < 60"
+              class="text-caption text-grey-7"
+            >
+              {{ currentCard.time.toFixed(1) }}s
+            </div>
           </div>
           <div class="text-h2 q-mb-md">{{ displayQuestion }}</div>
 
@@ -428,8 +430,8 @@ function goHome() {
       >
         <q-card style="min-width: 350px">
           <q-card-section
-            :class="['text-center q-pa-lg', isCorrect ? 'bg-positive' : 'bg-negative']"
-            class="text-white"
+            :class="[isCorrect ? 'bg-positive' : 'bg-negative']"
+            class="text-white text-center q-pa-lg"
           >
             <q-icon
               :name="isCorrect ? 'check_circle' : 'cancel'"
@@ -456,8 +458,16 @@ function goHome() {
               {{ currentCard?.question.replace('x', '×') }}
             </div>
             <div class="text-h5">
-              <span class="text-negative text-weight-bold" style="text-decoration: line-through;">{{ userAnswer }}</span>
-              <q-icon name="arrow_forward" size="sm" class="q-mx-sm" />
+              <span
+                class="text-negative text-weight-bold"
+                style="text-decoration: line-through"
+                >{{ userAnswer }}</span
+              >
+              <q-icon
+                name="arrow_forward"
+                size="sm"
+                class="q-mx-sm"
+              />
               <span class="text-positive text-weight-bold">{{ currentCard?.answer }}</span>
             </div>
           </q-card-section>

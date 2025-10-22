@@ -1,8 +1,9 @@
-import type { Card, GameHistory, Statistics } from '@/types'
+import type { Card, GameHistory, Statistics, GameConfig } from '@/types'
 
 export const CARDS_KEY = '1x1-cards'
 export const HISTORY_KEY = '1x1-history'
 export const STATS_KEY = '1x1-stats'
+export const GAME_CONFIG_KEY = '1x1-game-config'
 
 export class StorageService {
   // Cards
@@ -82,10 +83,25 @@ export class StorageService {
     localStorage.setItem(STATS_KEY, JSON.stringify(stats))
   }
 
+  // Game Configuration (Session Storage)
+  static setGameConfig(config: GameConfig): void {
+    sessionStorage.setItem(GAME_CONFIG_KEY, JSON.stringify(config))
+  }
+
+  static getGameConfig(): GameConfig | null {
+    const stored = sessionStorage.getItem(GAME_CONFIG_KEY)
+    return stored ? JSON.parse(stored) : null
+  }
+
+  static clearGameConfig(): void {
+    sessionStorage.removeItem(GAME_CONFIG_KEY)
+  }
+
   // Reset all data
   static resetAll(): void {
     localStorage.removeItem(CARDS_KEY)
     localStorage.removeItem(HISTORY_KEY)
     localStorage.removeItem(STATS_KEY)
+    sessionStorage.removeItem(GAME_CONFIG_KEY)
   }
 }

@@ -29,13 +29,14 @@ onMounted(() => {
 })
 
 function startGame() {
-  router.push({
-    name: '/game',
-    query: {
-      filter: filter.value.join(','),
-      focus: focus.value
-    }
+  // Save game config to session storage
+  StorageService.setGameConfig({
+    filter: filter.value,
+    focus: focus.value
   })
+
+  // Navigate to game page without query parameters
+  router.push({ name: '/game' })
 }
 
 function goToHistory() {
