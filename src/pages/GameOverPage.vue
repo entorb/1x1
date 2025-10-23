@@ -4,14 +4,9 @@ import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
 import GroundhogMascot from '@/components/GroundhogMascot.vue'
 import type { GameResult } from '@/types'
-import {
-  STATS_DB_COL,
-  WEB_STATS_API_URL,
-  FIRST_GAME_BONUS,
-  STREAK_GAME_BONUS,
-  STREAK_GAME_INTERVAL
-} from '@/config/constants'
+import { FIRST_GAME_BONUS, STREAK_GAME_BONUS, STREAK_GAME_INTERVAL } from '@/config/constants'
 import { TEXT_DE } from '@/config/text-de'
+import { helperStatsDataWrite } from '@/util/helpers'
 
 const router = useRouter()
 
@@ -64,13 +59,8 @@ onMounted(async () => {
       StorageService.updateStatistics(bonusPoints.value, 0)
     }
 
-    const url = `${WEB_STATS_API_URL}?origin=${STATS_DB_COL}&action=write`
-    try {
-      await fetch(url)
-      // Silently ignore errors - stats are not critical for app functionality
-    } catch {
-      // Silently ignore errors - stats are not critical for app functionality
-    }
+    // update usage stats in DB
+    await helperStatsDataWrite()
   }
 
   window.addEventListener('keydown', handleKeyDown)

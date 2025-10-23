@@ -269,8 +269,3 @@ export const FOCUS_OPTIONS = [
  * Database column name for web stats tracking
  */
 export const STATS_DB_COL = '1x1'
-
-/**
- * Web stats API base URL
- */
-export const WEB_STATS_API_URL = 'https://entorb.net/web-stats-json.php'

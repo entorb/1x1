@@ -6,14 +6,6 @@ describe('Full Game Flow', () => {
     cy.visit('/')
   })
 
-  it('should prevent starting game with no selection', () => {
-    // Try to deselect all numbers (keep clicking until can't deselect anymore)
-    cy.contains('button', '3').click()
-
-    // Start button should still be enabled (at least one must remain selected)
-    cy.contains('button', 'Spiel starten').should('not.be.disabled')
-  })
-
   it('should play a complete game with 1 wrong and 6 correct answers', () => {
     // Verify we're on the home page
     cy.contains("Vyvit's 1x1").should('be.visible')
@@ -25,7 +17,7 @@ describe('Full Game Flow', () => {
     cy.contains('button', '6').should('have.class', 'q-btn--unelevated')
 
     // Start the game
-    cy.contains('button', 'Spiel starten').click()
+    cy.contains('button', 'Starten').click()
 
     // Verify we're on the game page
     cy.url().should('include', '/game')

@@ -6,6 +6,7 @@ import type { FocusType, Statistics, SelectionType } from '@/types'
 import GroundhogMascot from '@/components/GroundhogMascot.vue'
 import { SELECT_OPTIONS, DEFAULT_SELECT, FOCUS_OPTIONS } from '@/config/constants'
 import { TEXT_DE } from '@/config/text-de'
+import { helperStatsDataRead } from '@/util/helpers'
 
 const router = useRouter()
 
@@ -26,10 +27,12 @@ const isNumberSelected = computed(() => (num: number) => {
   return select.value.includes(num)
 })
 
+const totalGamesPlayedByAll = ref<number>(0)
+
 // Check if x² is selected
 const isSquaresSelected = computed(() => select.value === 'x²')
 
-onMounted(() => {
+onMounted(async () => {
   statistics.value = StorageService.getStatistics()
   // Initialize cards if not already done and verify all cards exist
   StorageService.getCards()
@@ -41,6 +44,8 @@ onMounted(() => {
     select.value = savedConfig.select
     focus.value = savedConfig.focus
   }
+  // Fetch total games played by all users from database
+  totalGamesPlayedByAll.value = await helperStatsDataRead()
 })
 
 // Watch for changes and save to session storage
@@ -238,6 +243,37 @@ function toggleSquares() {
         icon="history"
         :label="TEXT_DE.goToHistory"
       />
+    </div>
+    <div class="text-center q-mt-lg q-pa-md text-caption text-grey-7 footer-links">
+      <div
+        v-if="totalGamesPlayedByAll > 0"
+        class="q-mt-sm text-grey-6"
+      >
+        {{ totalGamesPlayedByAll.toLocaleString('de-DE') }} {{ TEXT_DE.totalGamesPlayedByAll }}
+        {{ TEXT_DE.footerNoDataStored }}
+      </div>
+      <div class="q-gutter-x-md q-mt-sm">
+        <a
+          href="https://entorb.net/contact.php?origin=1x1"
+          target="_blank"
+          >by Torben</a
+        >
+        <a
+          href="https://entorb.net"
+          target="_blank"
+          >Home</a
+        >
+        <a
+          href="https://entorb.net/impressum.php"
+          target="_blank"
+          >Disclaimer</a
+        >
+        <a
+          href="https://github.com/entorb/1x1"
+          target="_blank"
+          >GitHub</a
+        >
+      </div>
     </div>
   </q-page>
 </template>

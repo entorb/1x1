@@ -5,10 +5,10 @@
 
 export const TEXT_DE = {
   // App title
-  appTitle: "Vyvit's 1x1",
+  appTitle: "Vyvit's 1x1 Spiel",
 
   // Common actions
-  start: 'Spiel starten',
+  start: 'Starten',
   continue: 'Weiter (Enter)',
   cancel: 'Abbrechen',
   reset: 'Zurücksetzen',
@@ -82,7 +82,10 @@ export const TEXT_DE = {
 
   // Empty states
   noGamesPlayed: 'Noch keine Spiele gespielt',
-  noDataAvailable: 'Keine Kartendaten verfügbar'
+  noDataAvailable: 'Keine Kartendaten verfügbar',
+
+  // Database stats
+  totalGamesPlayedByAll: 'Spiele gespielt von allen Nutzern.'
 } as const
 
 export type TextKey = keyof typeof TEXT_DE

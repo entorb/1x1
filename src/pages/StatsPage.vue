@@ -323,32 +323,6 @@ function goHome() {
         </q-card-section>
       </q-card>
     </div>
-
-    <div class="text-center q-mt-lg q-pa-md text-caption text-grey-7 footer-links">
-      <div>{{ TEXT_DE.footerNoDataStored }}</div>
-      <div class="q-gutter-x-md q-mt-sm">
-        <a
-          href="https://entorb.net"
-          target="_blank"
-          >Home</a
-        >
-        <a
-          href="https://entorb.net/contact.php?origin=1x1"
-          target="_blank"
-          >Contact</a
-        >
-        <a
-          href="https://entorb.net/impressum.php"
-          target="_blank"
-          >Disclaimer</a
-        >
-        <a
-          href="https://github.com/entorb/1x1"
-          target="_blank"
-          >GitHub</a
-        >
-      </div>
-    </div>
   </q-page>
 </template>
 
