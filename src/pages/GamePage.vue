@@ -415,8 +415,8 @@ function goHome() {
 
     <div v-else>
       <!-- Game Progress -->
-      <div class="row justify-between items-center q-mb-md progress-header">
-        <div class="text-h6 points-display">
+      <div class="row justify-between items-center q-mb-md">
+        <div class="text-h6 text-weight-bold">
           <q-icon
             name="emoji_events"
             color="amber"
@@ -424,7 +424,9 @@ function goHome() {
           />
           {{ currentPoints }}
         </div>
-        <div class="text-h6 card-counter">{{ currentCardIndex + 1 }} / {{ gameCards.length }}</div>
+        <div class="text-h6 text-weight-bold">
+          {{ currentCardIndex + 1 }} / {{ gameCards.length }}
+        </div>
       </div>
 
       <!-- Current Question -->
@@ -432,21 +434,20 @@ function goHome() {
         class="q-mb-md question-card"
         v-if="currentCard"
       >
-        <q-card-section class="text-center question-section">
-          <div class="row justify-between items-center q-mb-sm card-info">
+        <q-card-section class="text-center q-pa-md">
+          <div class="row justify-between items-center q-mb-sm">
             <q-badge
               color="primary"
               :label="`Level ${currentCard.level}`"
-              class="level-badge"
             />
             <div
               v-if="currentCard.time < MAX_CARD_TIME"
-              class="text-caption text-grey-7 time-display"
+              class="text-caption text-weight-medium text-grey-7"
             >
               {{ currentCard.time.toFixed(1) }}s
             </div>
           </div>
-          <div class="question-text">{{ displayQuestion }}</div>
+          <div class="question-text q-my-md">{{ displayQuestion }}</div>
 
           <!-- Time Progress Bar -->
           <q-linear-progress
@@ -467,35 +468,33 @@ function goHome() {
         inputmode="numeric"
         pattern="[0-9]*"
         outlined
-        class="q-mb-md answer-input"
+        class="q-mb-md"
         @keyup.enter="submitAnswer"
         autofocus
-        input-class="text-h3 text-center answer-text"
+        input-class="text-h3 text-center"
         ref="answerInput"
         :rules="[val => val === null || Number.isInteger(val)]"
       />
 
-      <div class="row q-gutter-sm q-mb-md action-buttons">
+      <div class="row q-gutter-sm q-mb-md">
         <q-btn
           flat
           color="grey"
           size="lg"
           @click="goHome"
           icon="close"
-          class="cancel-btn"
         />
         <q-btn
           color="primary"
           size="lg"
-          class="col submit-btn"
+          class="col text-weight-bold"
           @click="submitAnswer"
           :disable="userAnswer === null || userAnswer === undefined || isButtonDisabled"
           icon="check"
-        >
-          <span class="button-label">
-            {{ isButtonDisabled ? `${TEXT_DE.wait} ${buttonDisableCountdown}s...` : TEXT_DE.check }}
-          </span>
-        </q-btn>
+          :label="
+            isButtonDisabled ? `${TEXT_DE.wait} ${buttonDisableCountdown}s...` : TEXT_DE.check
+          "
+        />
       </div>
 
       <!-- Game Feedback Dialog Component -->
@@ -520,18 +519,10 @@ function goHome() {
 </template>
 
 <style scoped>
+/* Quasar handles most styling - keep only unique patterns */
 .game-page {
   max-width: 600px;
   margin: 0 auto;
-}
-
-.progress-header {
-  padding: 0 4px;
-}
-
-.points-display,
-.card-counter {
-  font-weight: 600;
 }
 
 .question-card {
@@ -539,121 +530,20 @@ function goHome() {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
 }
 
-.question-section {
-  padding: 20px 16px;
-}
-
 .question-text {
-  font-size: 3.5rem;
+  font-size: 4rem;
   font-weight: 700;
-  margin: 16px 0;
   line-height: 1.2;
-}
-
-.level-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 6px 10px;
-}
-
-.time-display {
-  font-size: 0.8rem;
-  font-weight: 500;
 }
 
 .progress-bar {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.answer-input {
-  font-size: 1rem;
-}
-
-.answer-text {
-  font-size: 0.8rem;
-  line-height: 1;
-}
-
-.action-buttons .cancel-btn {
-  min-width: 56px;
-  height: 56px;
-}
-
-.action-buttons .submit-btn {
-  height: 56px;
-  font-weight: 600;
-}
-
-.button-label {
-  font-size: 1rem;
-}
-
-/* iPhone 7 and small screens optimization */
+/* Mobile: smaller question text */
 @media (max-width: 599.98px) {
-  .game-page {
-    padding: 10px !important;
-  }
-
-  .progress-header {
-    margin-bottom: 10px;
-  }
-
-  .points-display {
-    font-size: 1.1rem;
-  }
-
-  .card-counter {
-    font-size: 1rem;
-  }
-
-  .question-section {
-    padding: 16px 12px;
-  }
-
   .question-text {
     font-size: 2.75rem;
-    margin: 12px 0;
-  }
-
-  .level-badge {
-    font-size: 0.7rem;
-    padding: 4px 8px;
-  }
-
-  .time-display {
-    font-size: 0.75rem;
-  }
-
-  .answer-input {
-    font-size: 0.9rem;
-  }
-
-  .answer-text {
-    font-size: 0.6rem;
-  }
-
-  .action-buttons {
-    gap: 8px;
-  }
-
-  .action-buttons .cancel-btn {
-    min-width: 52px;
-    height: 52px;
-  }
-
-  .action-buttons .submit-btn {
-    height: 52px;
-  }
-
-  .button-label {
-    font-size: 0.9rem;
-  }
-}
-
-/* Tablet and larger */
-@media (min-width: 600px) {
-  .question-text {
-    font-size: 4rem;
   }
 }
 </style>

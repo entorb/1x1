@@ -56,30 +56,28 @@ function goHome() {
 <template>
   <q-page class="history-page q-pa-md">
     <!-- Header -->
-    <div class="row items-center q-mb-md page-header">
+    <div class="row items-center q-mb-md">
       <q-btn
         flat
         round
         icon="arrow_back"
         @click="goHome"
         size="md"
-        class="back-btn"
       />
-      <div class="text-h5 q-ml-sm page-title">{{ TEXT_DE.goToHistory }}</div>
+      <div class="text-h5 q-ml-sm text-weight-bold text-grey-8">{{ TEXT_DE.goToHistory }}</div>
     </div>
 
     <!-- Empty State -->
     <div
       v-if="history.length === 0"
-      class="text-center q-mt-xl empty-state"
+      class="text-center q-mt-xl"
     >
       <q-icon
         name="inbox"
         size="80px"
         color="grey-5"
-        class="empty-icon"
       />
-      <div class="text-h6 text-grey-6 q-mt-md empty-text">{{ TEXT_DE.noGamesPlayed }}</div>
+      <div class="text-h6 text-grey-6 q-mt-md text-weight-medium">{{ TEXT_DE.noGamesPlayed }}</div>
     </div>
 
     <!-- History List -->
@@ -91,41 +89,31 @@ function goHome() {
       <q-item
         v-for="(game, index) in sortedHistory"
         :key="index"
-        class="history-item"
+        class="history-item q-pa-md"
       >
         <q-item-section avatar>
           <q-avatar
             color="primary"
             text-color="white"
             size="48px"
-            class="game-avatar"
           >
-            <q-icon
-              name="emoji_events"
-              size="24px"
-            />
+            <q-icon name="emoji_events" />
           </q-avatar>
         </q-item-section>
 
-        <q-item-section class="game-info">
-          <q-item-label class="text-weight-bold game-date">
+        <q-item-section>
+          <q-item-label class="text-weight-bold">
             {{ formatDate(game.date) }}
           </q-item-label>
-          <q-item-label
-            caption
-            class="game-select"
-          >
+          <q-item-label caption>
             {{ TEXT_DE.selectionPrefix }}{{ formatSelection(game.select) }}
           </q-item-label>
         </q-item-section>
 
-        <q-item-section
-          side
-          class="game-stats"
-        >
+        <q-item-section side>
           <div class="column items-end">
-            <div class="text-h6 text-primary points-value">{{ game.points }}</div>
-            <div class="text-caption correct-answers">
+            <div class="text-h6 text-primary text-weight-bold">{{ game.points }}</div>
+            <div class="text-caption text-grey-7">
               {{ game.correctAnswers }}{{ TEXT_DE.correctSuffix }}
             </div>
           </div>
@@ -136,34 +124,10 @@ function goHome() {
 </template>
 
 <style scoped>
+/* Quasar handles most styling - keep only unique patterns */
 .history-page {
   max-width: 800px;
   margin: 0 auto;
-}
-
-.page-header {
-  padding: 8px 0;
-}
-
-.back-btn {
-  margin-left: -8px;
-}
-
-.page-title {
-  font-weight: 700;
-  color: #424242;
-}
-
-.empty-state {
-  margin-top: 100px;
-}
-
-.empty-icon {
-  opacity: 0.5;
-}
-
-.empty-text {
-  font-weight: 500;
 }
 
 .history-list {
@@ -172,106 +136,7 @@ function goHome() {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.history-item {
-  padding: 16px;
-  transition: background-color 0.2s ease;
-}
-
 .history-item:hover {
   background-color: #f5f5f5;
-}
-
-.game-avatar {
-  box-shadow: 0 2px 6px rgba(25, 118, 210, 0.3);
-}
-
-.game-date {
-  font-size: 1rem;
-  color: #212121;
-}
-
-.game-select {
-  font-size: 0.85rem;
-  color: #757575;
-  margin-top: 4px;
-}
-
-.points-value {
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.correct-answers {
-  color: #757575;
-  margin-top: 4px;
-}
-
-/* iPhone 7 and small screens optimization */
-@media (max-width: 599.98px) {
-  .history-page {
-    padding: 10px !important;
-  }
-
-  .page-header {
-    margin-bottom: 12px;
-    padding: 4px 0;
-  }
-
-  .page-title {
-    font-size: 1.3rem;
-  }
-
-  .empty-state {
-    margin-top: 80px;
-  }
-
-  .empty-icon {
-    font-size: 64px !important;
-  }
-
-  .empty-text {
-    font-size: 1rem;
-  }
-
-  .history-item {
-    padding: 12px 8px;
-  }
-
-  .game-avatar {
-    width: 42px !important;
-    height: 42px !important;
-  }
-
-  .game-avatar .q-icon {
-    font-size: 20px !important;
-  }
-
-  .game-date {
-    font-size: 0.9rem;
-  }
-
-  .game-select {
-    font-size: 0.75rem;
-  }
-
-  .points-value {
-    font-size: 1.1rem;
-  }
-
-  .correct-answers {
-    font-size: 0.7rem;
-  }
-}
-
-/* Tablet and larger */
-@media (min-width: 600px) {
-  .history-item {
-    padding: 18px 20px;
-  }
-
-  .game-avatar {
-    width: 52px !important;
-    height: 52px !important;
-  }
 }
 </style>

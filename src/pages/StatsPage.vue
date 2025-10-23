@@ -241,11 +241,11 @@ function goHome() {
                 >
                   <div
                     v-if="y <= x"
-                    class="cell-content"
+                    class="cell-content q-pa-xs"
                   >
-                    <div class="cell-question">{{ y }}x{{ x }}</div>
-                    <div class="cell-answer">{{ y * x }}</div>
-                    <div class="cell-stats">
+                    <div class="text-caption text-weight-medium">{{ y }}x{{ x }}</div>
+                    <div class="cell-answer q-my-xs">{{ y * x }}</div>
+                    <div class="text-caption text-weight-medium">
                       <span>L{{ getCard(y, x)?.level || 1 }}</span>
                       <span class="q-ml-xs">{{ getCard(y, x)?.time.toFixed(1) || 60 }}s</span>
                     </div>
@@ -353,6 +353,79 @@ function goHome() {
 </template>
 
 <style scoped>
+/* Quasar handles most styling - keep only essential grid and unique patterns */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stats-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* Cards grid system - unique layout Quasar can't handle */
+.cards-grid-container {
+  overflow-x: auto;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 40px repeat(7, 1fr);
+  gap: 6px;
+  min-width: 500px;
+}
+
+.grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  color: #616161;
+}
+
+.grid-cell {
+  aspect-ratio: 1;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+  min-height: 70px;
+}
+
+.grid-cell:not(.disabled) {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.grid-cell:not(.disabled):hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.grid-cell.disabled {
+  background-color: #fafafa;
+  opacity: 0.5;
+}
+
+.cell-content {
+  text-align: center;
+  width: 100%;
+}
+
+.cell-answer {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.pwa-info-card {
+  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+  border: 2px solid #bbdefb;
+}
+
 .footer-links {
   border-top: 1px solid #e0e0e0;
 }
@@ -368,269 +441,21 @@ function goHome() {
   text-decoration: underline;
 }
 
-.page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.stats-content {
-  animation: fadeIn 0.3s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Level Distribution Card */
-.level-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.level-stats {
-  margin: 0 -4px;
-}
-
-.level-badge {
-  border-radius: 8px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-}
-
-.level-badge:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Grid Card */
-.grid-card {
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.cards-grid-container {
-  overflow-x: auto;
-  margin: 0 -8px;
-  padding: 0 8px;
-}
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: 40px repeat(7, 1fr);
-  gap: 6px;
-  min-width: 500px;
-}
-
-.grid-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  font-size: 0.875rem;
-  color: #616161;
-}
-
-.grid-cell {
-  aspect-ratio: 1;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s ease;
-  min-height: 70px;
-  cursor: default;
-}
-
-.grid-cell:not(.disabled) {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.grid-cell:not(.disabled):hover {
-  transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  z-index: 1;
-  border-color: rgba(0, 0, 0, 0.3);
-}
-
-.grid-cell.disabled {
-  background-color: #fafafa;
-  border-color: #f0f0f0;
-  opacity: 0.5;
-}
-
-.cell-content {
-  text-align: center;
-  padding: 6px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.cell-question {
-  font-size: 0.65rem;
-  font-weight: 500;
-  opacity: 0.85;
-  line-height: 1;
-}
-
-.cell-answer {
-  font-weight: 700;
-  font-size: 1.1rem;
-  line-height: 1.2;
-  margin: 2px 0;
-}
-
-.cell-stats {
-  font-size: 0.65rem;
-  font-weight: 500;
-  opacity: 0.9;
-  line-height: 1;
-  margin-top: 2px;
-}
-
-/* Legend */
-.legend {
-  background-color: #f8f9fa;
-  padding: 12px;
-  border-radius: 8px;
-}
-
-.legend-chip {
-  width: 100%;
-  justify-content: flex-start;
-  background-color: white;
-  border: 1px solid #e0e0e0;
-}
-
-/* PWA Info Card */
-.pwa-info-card {
-  border-radius: 12px;
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-  border: 2px solid #bbdefb;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.pwa-instructions {
-  font-size: 0.875rem;
-  line-height: 1.6;
-  color: #424242;
-}
-
-/* iPhone 7 and small screens optimization */
+/* Mobile: compact grid */
 @media (max-width: 599.98px) {
-  .page-container {
-    padding: 10px !important;
-  }
-
   .cards-grid {
-    gap: 3px;
     grid-template-columns: 28px repeat(7, 1fr);
+    gap: 3px;
     min-width: 360px;
-  }
-
-  .grid-header {
-    padding: 2px;
-    font-size: 0.7rem;
   }
 
   .grid-cell {
     min-height: 54px;
     border-width: 1px;
-    border-radius: 4px;
-  }
-
-  .cell-content {
-    padding: 3px;
-    gap: 1px;
-  }
-
-  .cell-question {
-    font-size: 0.55rem;
   }
 
   .cell-answer {
     font-size: 0.85rem;
-    margin: 1px 0;
-  }
-
-  .cell-stats {
-    font-size: 0.55rem;
-    margin-top: 1px;
-  }
-
-  .legend {
-    padding: 10px;
-  }
-
-  .legend-chip {
-    font-size: 0.65rem;
-    padding: 4px 8px;
-  }
-
-  .pwa-instructions {
-    font-size: 0.75rem;
-  }
-
-  .level-card,
-  .grid-card,
-  .pwa-info-card {
-    border-radius: 10px;
-  }
-
-  .level-stats .col {
-    padding: 0 2px;
-  }
-
-  .level-badge {
-    border-radius: 6px;
-  }
-
-  .level-badge .q-card-section {
-    padding: 6px 4px;
-  }
-
-  .level-badge .text-caption {
-    font-size: 0.65rem;
-  }
-
-  .level-badge .text-h5 {
-    font-size: 1.1rem;
-  }
-}
-
-/* Tablet and larger */
-@media (min-width: 600px) {
-  .cards-grid {
-    min-width: 550px;
-  }
-
-  .grid-cell {
-    min-height: 85px;
-  }
-}
-
-/* Large screens */
-@media (min-width: 1024px) {
-  .cards-grid {
-    gap: 8px;
-    min-width: 650px;
-  }
-
-  .grid-cell {
-    min-height: 95px;
-  }
-
-  .cell-answer {
-    font-size: 1.25rem;
   }
 }
 </style>

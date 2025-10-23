@@ -33,10 +33,6 @@ const totalPoints = computed(() => {
   return result.value.points + bonusPoints.value
 })
 
-const successMessage = computed(() => {
-  return TEXT_DE.successMessage.replace('{{percent}}', String(Math.round(successRate.value * 100)))
-})
-
 function handleKeyDown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     goHome()
@@ -109,44 +105,44 @@ function goHome() {
           name="emoji_events"
           color="amber"
           size="100px"
-          class="trophy-icon"
+          class="animate-bounce"
         />
       </div>
 
       <!-- Title -->
-      <div class="text-h4 q-mt-md game-title">{{ TEXT_DE.gameOver }}</div>
-
-      <!-- Success Message -->
-      <div
-        v-if="showMascot"
-        class="text-h6 text-positive q-mt-sm success-message"
-      >
-        {{ successMessage }}
-      </div>
+      <div class="text-h4 q-mt-md text-weight-bold text-primary">{{ TEXT_DE.gameOver }}</div>
 
       <!-- Results Card -->
       <q-card class="q-mt-lg results-card">
-        <q-card-section class="results-section">
-          <div class="text-h5 q-mb-md results-title">{{ TEXT_DE.results }}</div>
-          <div class="row q-gutter-md justify-center stats-row">
+        <q-card-section class="q-pa-lg">
+          <div class="text-h5 q-mb-md text-weight-bold text-grey-8">{{ TEXT_DE.results }}</div>
+          <div class="row q-gutter-md justify-center">
             <div class="stat-item">
-              <div class="text-caption stat-label">{{ TEXT_DE.pointsLabel }}</div>
-              <div class="text-h4 text-primary stat-value">{{ result.points }}</div>
+              <div class="text-caption text-uppercase text-grey-7 q-mb-xs">
+                {{ TEXT_DE.pointsLabel }}
+              </div>
+              <div class="text-h4 text-primary text-weight-bold stat-value">
+                {{ result.points }}
+              </div>
             </div>
             <div class="stat-item">
-              <div class="text-caption stat-label">{{ TEXT_DE.correct_plural }}</div>
-              <div class="text-h4 text-positive stat-value">{{ result.correctAnswers }}</div>
+              <div class="text-caption text-uppercase text-grey-7 q-mb-xs">
+                {{ TEXT_DE.correct_plural }}
+              </div>
+              <div class="text-h4 text-positive text-weight-bold stat-value">
+                {{ result.correctAnswers }}
+              </div>
             </div>
             <div class="stat-item">
-              <div class="text-caption stat-label">{{ TEXT_DE.from }}</div>
-              <div class="text-h4 stat-value">{{ result.totalCards }}</div>
+              <div class="text-caption text-uppercase text-grey-7 q-mb-xs">{{ TEXT_DE.from }}</div>
+              <div class="text-h4 text-weight-bold stat-value">{{ result.totalCards }}</div>
             </div>
           </div>
 
           <!-- Bonus Points -->
           <div
             v-if="bonusPoints > 0"
-            class="q-mt-md bonus-section"
+            class="q-mt-md bonus-section q-pa-sm"
           >
             <q-separator class="q-mb-md" />
             <div class="text-subtitle2 text-amber-8 text-weight-bold q-mb-sm">
@@ -159,7 +155,7 @@ function goHome() {
             <div
               v-for="(reason, index) in bonusReasons"
               :key="index"
-              class="bonus-reason"
+              class="row justify-center q-mb-xs"
             >
               <q-chip
                 color="amber-2"
@@ -184,18 +180,18 @@ function goHome() {
       <q-btn
         color="primary"
         size="lg"
-        class="full-width q-mt-lg home-btn"
+        class="full-width q-mt-lg home-btn text-weight-medium"
         icon="home"
+        :label="TEXT_DE.backToHome"
         unelevated
         @click="goHome"
-      >
-        <span class="button-text">{{ TEXT_DE.backToHome }}</span>
-      </q-btn>
+      />
     </div>
   </q-page>
 </template>
 
 <style scoped>
+/* Quasar handles most styling - keep only unique patterns */
 .game-over-page {
   max-width: 600px;
   margin: 0 auto;
@@ -207,7 +203,6 @@ function goHome() {
 
 .content-container {
   width: 100%;
-  padding: 20px 0;
 }
 
 .mascot-container {
@@ -220,160 +215,24 @@ function goHome() {
   height: 150px;
 }
 
-.trophy-icon {
-  animation: bounce 1s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.game-title {
-  font-weight: 700;
-  color: #1976d2;
-}
-
-.success-message {
-  font-weight: 600;
-  animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .results-card {
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.results-section {
-  padding: 24px 20px;
-}
-
-.results-title {
-  font-weight: 700;
-  color: #424242;
-}
-
-.stats-row {
-  margin: 0 -8px;
 }
 
 .stat-item {
   min-width: 90px;
 }
 
-.stat-label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #757575;
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-weight: 700;
-  line-height: 1;
-}
-
 .home-btn {
   height: 56px;
   border-radius: 12px;
-  font-weight: 600;
   box-shadow: 0 3px 8px rgba(25, 118, 210, 0.3);
-}
-
-.button-text {
-  font-size: 1.1rem;
 }
 
 .bonus-section {
   background-color: #fffbf0;
-  padding: 12px;
   border-radius: 8px;
-}
-
-.bonus-reason {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 4px;
-}
-
-/* iPhone 7 and small screens optimization */
-@media (max-width: 599.98px) {
-  .game-over-page {
-    padding: 12px !important;
-  }
-
-  .content-container {
-    padding: 10px 0;
-  }
-
-  .mascot {
-    width: 120px;
-    height: 120px;
-  }
-
-  .trophy-icon {
-    font-size: 80px !important;
-  }
-
-  .game-title {
-    font-size: 1.75rem;
-  }
-
-  .success-message {
-    font-size: 1.1rem;
-  }
-
-  .results-section {
-    padding: 18px 16px;
-  }
-
-  .results-title {
-    font-size: 1.25rem;
-    margin-bottom: 16px !important;
-  }
-
-  .stats-row {
-    gap: 12px !important;
-  }
-
-  .stat-item {
-    min-width: 80px;
-  }
-
-  .stat-label {
-    font-size: 0.65rem;
-    margin-bottom: 4px;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-  }
-
-  .home-btn {
-    height: 52px;
-    margin-top: 20px !important;
-  }
-
-  .button-text {
-    font-size: 1rem;
-  }
 }
 
 /* Tablet and larger */

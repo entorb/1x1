@@ -28,7 +28,6 @@ export const TEXT_DE = {
   // Game states
   gameStarted: 'Spiel starten',
   gameOver: 'Spiel beendet!',
-  successMessage: 'Sehr gut! {{percent}}% richtig!',
 
   // Statistics labels
   games: 'Spiele',

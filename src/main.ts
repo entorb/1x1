@@ -9,6 +9,9 @@ import 'quasar/dist/quasar.css'
 // Import icon libraries
 import '@quasar/extras/material-icons/material-icons.css'
 
+// Import global styles
+import './styles/global.css'
+
 // Register PWA service worker
 import { registerSW } from 'virtual:pwa-register'
 registerSW({ immediate: true })

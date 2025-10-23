@@ -109,21 +109,21 @@ function toggleSquares() {
 </script>
 
 <template>
-  <q-page class="q-pa-md page-container">
+  <q-page class="q-pa-md">
     <div class="text-h5 text-center q-mb-md">{{ TEXT_DE.appTitle }}</div>
 
     <!-- Mascot and Statistics -->
-    <div class="row items-center justify-center q-mb-md mascot-container">
+    <div class="row items-center justify-center q-mb-md">
       <div class="col-12 col-sm-auto text-center">
         <GroundhogMascot class="mascot" />
       </div>
       <div class="col-12 col-sm">
         <q-card
-          class="speech-bubble"
+          class="speech-bubble speech-bubble-arrow"
           flat
           bordered
         >
-          <q-card-section class="stats-section">
+          <q-card-section class="q-pa-sm">
             <div class="row text-center q-gutter-sm justify-around">
               <div class="col-3">
                 <div class="text-caption">{{ TEXT_DE.games }}</div>
@@ -145,7 +145,7 @@ function toggleSquares() {
 
     <!-- Game Configuration -->
     <q-card class="q-mb-md">
-      <q-card-section class="config-section">
+      <q-card-section class="q-pa-md">
         <div class="text-subtitle1 q-mb-sm">
           <q-icon name="settings" />
           {{ TEXT_DE.settings }}
@@ -154,7 +154,7 @@ function toggleSquares() {
         <!-- Select Rows -->
         <div class="q-mb-sm">
           <div class="text-subtitle2 q-mb-xs">{{ TEXT_DE.selection }}</div>
-          <div class="row q-gutter-xs number-buttons">
+          <div class="row q-gutter-xs">
             <q-btn
               v-for="option in selectOptions"
               :key="option"
@@ -243,12 +243,7 @@ function toggleSquares() {
 </template>
 
 <style scoped>
-.page-container {
-  max-width: 100%;
-  overflow-y: auto;
-  padding: 12px;
-}
-
+/* Quasar handles most styling - keep only unique patterns */
 .mascot {
   width: 100px;
   height: 100px;
@@ -262,92 +257,7 @@ function toggleSquares() {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-.speech-bubble::before,
-.speech-bubble::after {
-  content: '';
-  position: absolute;
-  border-style: solid;
-}
-
-.stats-section {
-  padding: 10px 12px;
-}
-
-.config-section {
-  padding: 14px;
-}
-
-.number-buttons {
-  min-height: 48px;
-}
-
-.number-buttons .col {
-  min-width: 44px;
-}
-
-/* Small screens (iPhone 7: 375px × 667px) */
-@media (max-width: 599.98px) {
-  .page-container {
-    padding: 10px !important;
-  }
-
-  .mascot-container {
-    flex-direction: column;
-    margin-bottom: 12px;
-  }
-
-  .mascot {
-    margin-bottom: 8px;
-  }
-
-  .speech-bubble {
-    width: 100%;
-  }
-
-  /* Arrow Border */
-  .speech-bubble::before {
-    top: -18px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 9px;
-    border-color: transparent transparent var(--bubble-border-color) transparent;
-  }
-
-  /* Arrow Fill */
-  .speech-bubble::after {
-    top: -16px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-width: 8px;
-    border-color: transparent transparent white transparent;
-  }
-
-  .stats-section {
-    padding: 8px 10px;
-  }
-
-  .stats-section .text-h6 {
-    font-size: 1.1rem;
-  }
-
-  .stats-section .text-caption {
-    font-size: 0.7rem;
-  }
-
-  .config-section {
-    padding: 12px;
-  }
-
-  .number-buttons {
-    margin: 0 -2px;
-  }
-
-  .number-buttons .col {
-    padding: 0 2px;
-  }
-}
-
-/* Larger screens */
+/* Larger screens: bigger mascot, speech bubble margin */
 @media (min-width: 600px) {
   .mascot {
     width: 130px;
@@ -356,24 +266,6 @@ function toggleSquares() {
 
   .speech-bubble {
     margin-left: 15px;
-  }
-
-  /* Arrow Border */
-  .speech-bubble::before {
-    left: -18px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 9px;
-    border-color: transparent var(--bubble-border-color) transparent transparent;
-  }
-
-  /* Arrow Fill */
-  .speech-bubble::after {
-    left: -16px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 8px;
-    border-color: transparent white transparent transparent;
   }
 }
 </style>

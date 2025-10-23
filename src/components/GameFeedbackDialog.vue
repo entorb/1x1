@@ -46,22 +46,22 @@ function handleKeyup(event: KeyboardEvent) {
     <q-card class="feedback-card">
       <q-card-section
         :class="[isCorrect ? 'bg-positive' : 'bg-negative']"
-        class="text-white text-center header-section"
+        class="text-white text-center q-pa-lg"
       >
         <q-icon
           :name="isCorrect ? 'check_circle' : 'cancel'"
           color="white"
           size="100px"
-          class="q-mb-md feedback-icon"
+          class="q-mb-md animate-scale-in"
         />
-        <div class="text-h3 text-weight-bold q-mb-sm feedback-title">
+        <div class="text-h3 text-weight-bold q-mb-sm">
           {{ isCorrect ? TEXT_DE.correct : TEXT_DE.wrong }}
         </div>
         <div
           v-if="isCorrect"
           class="q-mt-md"
         >
-          <div class="text-h5 points-display">+{{ lastPoints }} Punkte</div>
+          <div class="text-h5 text-weight-bold">+{{ lastPoints }} Punkte</div>
           <div class="text-caption q-mt-xs points-calculation">
             <span v-if="speedBonus > 0">
               {{ basePoints }} + {{ levelBonus }} + {{ speedBonus }} = {{ lastPoints }}
@@ -73,9 +73,9 @@ function handleKeyup(event: KeyboardEvent) {
 
       <q-card-section
         v-if="!isCorrect"
-        class="text-center answer-section"
+        class="text-center q-pa-lg"
       >
-        <div class="text-h4 q-mb-md text-grey-8 question-display">
+        <div class="text-h4 q-mb-md text-grey-8 text-weight-medium">
           {{ currentCard?.question.replace('x', '×') }}
         </div>
         <div class="text-h5 answer-comparison">
@@ -83,7 +83,7 @@ function handleKeyup(event: KeyboardEvent) {
           <q-icon
             name="arrow_forward"
             size="sm"
-            class="q-mx-sm arrow-icon"
+            class="q-mx-sm"
           />
           <span class="text-positive text-weight-bold correct-answer">{{
             currentCard?.answer
@@ -93,7 +93,7 @@ function handleKeyup(event: KeyboardEvent) {
 
       <q-card-actions
         align="center"
-        class="action-section"
+        class="q-pa-md"
         :class="isCorrect ? 'bg-positive-1' : 'bg-negative-1'"
       >
         <q-btn
@@ -103,14 +103,14 @@ function handleKeyup(event: KeyboardEvent) {
           "
           size="lg"
           unelevated
-          class="full-width continue-btn"
+          class="full-width continue-btn text-weight-medium"
           autofocus
           :disable="isButtonDisabled || isEnterDisabled"
           @click="handleContinue"
         />
         <div
           v-if="autoCloseCountdown > 0"
-          class="text-caption q-mt-sm text-grey-7 full-width text-center auto-close-text"
+          class="text-caption q-mt-sm text-grey-7 full-width text-center"
         >
           {{ TEXT_DE.autoCloseIn }} {{ autoCloseCountdown }}s...
         </div>
@@ -120,51 +120,17 @@ function handleKeyup(event: KeyboardEvent) {
 </template>
 
 <style scoped>
+/* Quasar handles most styling - keep only unique patterns */
 .feedback-card {
   min-width: 350px;
+  max-width: 90vw;
   border-radius: 16px;
   overflow: hidden;
 }
 
-.header-section {
-  padding: 32px 24px;
-}
-
-.feedback-icon {
-  animation: scaleIn 0.3s ease-out;
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.feedback-title {
-  font-size: 2.5rem;
-}
-
-.points-display {
-  font-weight: 700;
-}
-
 .points-calculation {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 0.85rem;
   font-weight: 500;
-}
-
-.answer-section {
-  padding: 28px 24px;
-}
-
-.question-display {
-  font-weight: 600;
 }
 
 .answer-comparison {
@@ -182,76 +148,8 @@ function handleKeyup(event: KeyboardEvent) {
   font-size: 1.8rem;
 }
 
-.action-section {
-  padding: 20px;
-}
-
 .continue-btn {
   height: 56px;
   border-radius: 8px;
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
-.auto-close-text {
-  font-size: 0.75rem;
-  opacity: 0.8;
-}
-
-/* iPhone 7 and small screens optimization */
-@media (max-width: 599.98px) {
-  .feedback-card {
-    min-width: 320px;
-    max-width: 90vw;
-  }
-
-  .header-section {
-    padding: 24px 20px;
-  }
-
-  .feedback-icon {
-    font-size: 80px !important;
-  }
-
-  .feedback-title {
-    font-size: 2rem;
-  }
-
-  .points-display {
-    font-size: 1.25rem;
-  }
-
-  .points-calculation {
-    font-size: 0.75rem;
-  }
-
-  .answer-section {
-    padding: 20px 16px;
-  }
-
-  .question-display {
-    font-size: 1.5rem;
-  }
-
-  .answer-comparison {
-    font-size: 1.25rem;
-  }
-
-  .correct-answer {
-    font-size: 1.5rem;
-  }
-
-  .action-section {
-    padding: 16px;
-  }
-
-  .continue-btn {
-    height: 52px;
-    font-size: 1rem;
-  }
-
-  .auto-close-text {
-    font-size: 0.7rem;
-  }
 }
 </style>
