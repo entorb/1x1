@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Card } from '@/types'
-import { TEXT } from '@/config/constants'
+import { TEXT_DE } from '@/config/text-de'
 
 interface Props {
   show: boolean
@@ -55,7 +55,7 @@ function handleKeyup(event: KeyboardEvent) {
           class="q-mb-md feedback-icon"
         />
         <div class="text-h3 text-weight-bold q-mb-sm feedback-title">
-          {{ isCorrect ? TEXT.correct : TEXT.wrong }}
+          {{ isCorrect ? TEXT_DE.correct : TEXT_DE.wrong }}
         </div>
         <div
           v-if="isCorrect"
@@ -98,7 +98,9 @@ function handleKeyup(event: KeyboardEvent) {
       >
         <q-btn
           :color="isCorrect ? 'positive' : 'negative'"
-          :label="isButtonDisabled ? `${TEXT.wait} ${buttonDisableCountdown}s...` : TEXT.continue"
+          :label="
+            isButtonDisabled ? `${TEXT_DE.wait} ${buttonDisableCountdown}s...` : TEXT_DE.continue
+          "
           size="lg"
           unelevated
           class="full-width continue-btn"
@@ -110,7 +112,7 @@ function handleKeyup(event: KeyboardEvent) {
           v-if="autoCloseCountdown > 0"
           class="text-caption q-mt-sm text-grey-7 full-width text-center auto-close-text"
         >
-          {{ TEXT.autoCloseIn }} {{ autoCloseCountdown }}s...
+          {{ TEXT_DE.autoCloseIn }} {{ autoCloseCountdown }}s...
         </div>
       </q-card-actions>
     </q-card>

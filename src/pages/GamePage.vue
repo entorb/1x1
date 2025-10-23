@@ -629,7 +629,7 @@ function goHome() {
   }
 
   .answer-text {
-    font-size: 0.75rem;
+    font-size: 0.6rem;
   }
 
   .action-buttons {

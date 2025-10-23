@@ -9,8 +9,7 @@ import {
   WEB_STATS_API_URL,
   FIRST_GAME_BONUS,
   STREAK_GAME_BONUS,
-  STREAK_GAME_INTERVAL,
-  TEXT
+  STREAK_GAME_INTERVAL
 } from '@/config/constants'
 import { TEXT_DE } from '@/config/text-de'
 
@@ -56,12 +55,12 @@ onMounted(async () => {
 
     if (dailyInfo.isFirstGame) {
       bonusPoints.value += FIRST_GAME_BONUS
-      bonusReasons.value.push(TEXT.firstGameBonus)
+      bonusReasons.value.push(TEXT_DE.firstGameBonus)
     }
 
     if (dailyInfo.gamesPlayedToday % STREAK_GAME_INTERVAL === 0) {
       bonusPoints.value += STREAK_GAME_BONUS
-      bonusReasons.value.push(`${dailyInfo.gamesPlayedToday}. ${TEXT.streakGameBonus}`)
+      bonusReasons.value.push(`${dailyInfo.gamesPlayedToday}. ${TEXT_DE.streakGameBonus}`)
     }
 
     // Update statistics with bonus points
@@ -155,7 +154,7 @@ function goHome() {
                 name="star"
                 color="amber"
               />
-              {{ TEXT.bonusPoints }}
+              {{ TEXT_DE.bonusPoints }}
             </div>
             <div
               v-for="(reason, index) in bonusReasons"
@@ -168,7 +167,7 @@ function goHome() {
                 icon="add"
                 dense
               >
-                +{{ reason === TEXT.firstGameBonus ? FIRST_GAME_BONUS : STREAK_GAME_BONUS }}
+                +{{ reason === TEXT_DE.firstGameBonus ? FIRST_GAME_BONUS : STREAK_GAME_BONUS }}
                 {{ reason }}
               </q-chip>
             </div>
