@@ -1,5 +1,5 @@
 {
-  "include": ["vite.config.ts", "vitest.config.ts"],
+  "include": ["vite.config.ts", "vitest.config.ts", "src/config/text-de.ts"],
   "compilerOptions": {
     "composite": true,
     "skipLibCheck": true,

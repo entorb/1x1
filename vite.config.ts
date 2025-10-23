@@ -7,6 +7,7 @@ import { quasar, transformAssetUrls } from '@quasar/vite-plugin'
 // Utilities
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
+import { TEXT_DE } from './src/config/text-de'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -42,7 +43,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'android-chrome-192x192.png'],
       manifest: {
-        name: "Vyvit's 1x1",
+        name: TEXT_DE.appTitle,
         short_name: '1x1',
         description: "Vyvit's 1x1 training app",
         theme_color: '#1976d2',

@@ -4,11 +4,21 @@ import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
 import GroundhogMascot from '@/components/GroundhogMascot.vue'
 import type { GameResult } from '@/types'
-import { STATS_DB_COL, WEB_STATS_API_URL } from '@/config/constants'
+import {
+  STATS_DB_COL,
+  WEB_STATS_API_URL,
+  FIRST_GAME_BONUS,
+  STREAK_GAME_BONUS,
+  STREAK_GAME_INTERVAL,
+  TEXT
+} from '@/config/constants'
+import { TEXT_DE } from '@/config/text-de'
 
 const router = useRouter()
 
 const result = ref<GameResult | null>(null)
+const bonusPoints = ref(0)
+const bonusReasons = ref<string[]>([])
 
 const successRate = computed(() => {
   if (!result.value) return 0
@@ -17,6 +27,15 @@ const successRate = computed(() => {
 
 const showMascot = computed(() => {
   return successRate.value >= 0.7
+})
+
+const totalPoints = computed(() => {
+  if (!result.value) return 0
+  return result.value.points + bonusPoints.value
+})
+
+const successMessage = computed(() => {
+  return TEXT_DE.successMessage.replace('{{percent}}', String(Math.round(successRate.value * 100)))
 })
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -32,6 +51,24 @@ onMounted(async () => {
     // No result found, redirect to home
     router.push({ name: '/' })
   } else {
+    // Calculate daily bonuses
+    const dailyInfo = StorageService.incrementDailyGames()
+
+    if (dailyInfo.isFirstGame) {
+      bonusPoints.value += FIRST_GAME_BONUS
+      bonusReasons.value.push(TEXT.firstGameBonus)
+    }
+
+    if (dailyInfo.gamesPlayedToday % STREAK_GAME_INTERVAL === 0) {
+      bonusPoints.value += STREAK_GAME_BONUS
+      bonusReasons.value.push(`${dailyInfo.gamesPlayedToday}. ${TEXT.streakGameBonus}`)
+    }
+
+    // Update statistics with bonus points
+    if (bonusPoints.value > 0) {
+      StorageService.updateStatistics(bonusPoints.value, 0)
+    }
+
     const url = `${WEB_STATS_API_URL}?origin=${STATS_DB_COL}&action=write`
     try {
       await fetch(url)
@@ -78,32 +115,67 @@ function goHome() {
       </div>
 
       <!-- Title -->
-      <div class="text-h4 q-mt-md game-title">Spiel beendet!</div>
+      <div class="text-h4 q-mt-md game-title">{{ TEXT_DE.gameOver }}</div>
 
       <!-- Success Message -->
       <div
         v-if="showMascot"
         class="text-h6 text-positive q-mt-sm success-message"
       >
-        Sehr gut! {{ Math.round(successRate * 100) }}% richtig!
+        {{ successMessage }}
       </div>
 
       <!-- Results Card -->
       <q-card class="q-mt-lg results-card">
         <q-card-section class="results-section">
-          <div class="text-h5 q-mb-md results-title">Ergebnis</div>
+          <div class="text-h5 q-mb-md results-title">{{ TEXT_DE.results }}</div>
           <div class="row q-gutter-md justify-center stats-row">
             <div class="stat-item">
-              <div class="text-caption stat-label">Punkte</div>
+              <div class="text-caption stat-label">{{ TEXT_DE.pointsLabel }}</div>
               <div class="text-h4 text-primary stat-value">{{ result.points }}</div>
             </div>
             <div class="stat-item">
-              <div class="text-caption stat-label">Richtige</div>
+              <div class="text-caption stat-label">{{ TEXT_DE.correct_plural }}</div>
               <div class="text-h4 text-positive stat-value">{{ result.correctAnswers }}</div>
             </div>
             <div class="stat-item">
-              <div class="text-caption stat-label">Von</div>
+              <div class="text-caption stat-label">{{ TEXT_DE.from }}</div>
               <div class="text-h4 stat-value">{{ result.totalCards }}</div>
+            </div>
+          </div>
+
+          <!-- Bonus Points -->
+          <div
+            v-if="bonusPoints > 0"
+            class="q-mt-md bonus-section"
+          >
+            <q-separator class="q-mb-md" />
+            <div class="text-subtitle2 text-amber-8 text-weight-bold q-mb-sm">
+              <q-icon
+                name="star"
+                color="amber"
+              />
+              {{ TEXT.bonusPoints }}
+            </div>
+            <div
+              v-for="(reason, index) in bonusReasons"
+              :key="index"
+              class="bonus-reason"
+            >
+              <q-chip
+                color="amber-2"
+                text-color="amber-9"
+                icon="add"
+                dense
+              >
+                +{{ reason === TEXT.firstGameBonus ? FIRST_GAME_BONUS : STREAK_GAME_BONUS }}
+                {{ reason }}
+              </q-chip>
+            </div>
+            <div class="row justify-center q-mt-sm">
+              <div class="text-h6 text-weight-bold">
+                {{ result.points }} + {{ bonusPoints }} = {{ totalPoints }}
+              </div>
             </div>
           </div>
         </q-card-section>
@@ -118,7 +190,7 @@ function goHome() {
         unelevated
         @click="goHome"
       >
-        <span class="button-text">Zurück zur Startseite</span>
+        <span class="button-text">{{ TEXT_DE.backToHome }}</span>
       </q-btn>
     </div>
   </q-page>
@@ -228,6 +300,18 @@ function goHome() {
 
 .button-text {
   font-size: 1.1rem;
+}
+
+.bonus-section {
+  background-color: #fffbf0;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.bonus-reason {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
 }
 
 /* iPhone 7 and small screens optimization */

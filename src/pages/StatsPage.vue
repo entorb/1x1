@@ -12,6 +12,7 @@ import {
   TIME_COLOR_THRESHOLDS,
   BG_COLORS
 } from '@/config/constants'
+import { TEXT_DE } from '@/config/text-de'
 
 const router = useRouter()
 const $q = useQuasar()
@@ -95,14 +96,14 @@ function getCellStyle(y: number, x: number): Record<string, string> {
 
 function resetCards() {
   $q.dialog({
-    title: 'Karten zurücksetzen',
-    message: 'Möchten Sie alle Karten auf Level 1 und Zeit 60s zurücksetzen?',
+    title: TEXT_DE.resetCardsTitle,
+    message: TEXT_DE.resetCardsMessage,
     cancel: {
-      label: 'Abbrechen',
+      label: TEXT_DE.cancel,
       flat: true
     },
     ok: {
-      label: 'Zurücksetzen',
+      label: TEXT_DE.reset,
       color: 'negative'
     },
     persistent: true
@@ -111,7 +112,7 @@ function resetCards() {
     cards.value = StorageService.getCards()
     $q.notify({
       type: 'positive',
-      message: 'Alle Karten wurden zurückgesetzt',
+      message: TEXT_DE.resetCardsSuccess,
       position: 'top'
     })
   })
@@ -133,7 +134,7 @@ function goHome() {
         @click="goHome"
         size="md"
       />
-      <div class="text-h5 q-ml-sm">Statistiken</div>
+      <div class="text-h5 q-ml-sm">{{ TEXT_DE.statistics }}</div>
     </div>
 
     <!-- Empty State -->
@@ -146,7 +147,7 @@ function goHome() {
         size="80px"
         color="grey-5"
       />
-      <div class="text-h6 text-grey-6 q-mt-md">Keine Kartendaten verfügbar</div>
+      <div class="text-h6 text-grey-6 q-mt-md">{{ TEXT_DE.noDataAvailable }}</div>
     </div>
 
     <!-- Content -->
@@ -163,14 +164,14 @@ function goHome() {
                 name="layers"
                 class="q-mr-xs"
               />
-              Karten pro Level
+              {{ TEXT_DE.cardsPerLevel }}
             </div>
             <q-btn
               flat
               dense
               color="negative"
               icon="refresh"
-              label="Zurücksetzen"
+              :label="TEXT_DE.reset"
               size="sm"
               @click="resetCards"
             />
@@ -188,7 +189,7 @@ function goHome() {
                 :style="{ backgroundColor: getLevelBackgroundColor(level) }"
               >
                 <q-card-section class="text-center q-pa-sm">
-                  <div class="text-caption text-grey-8">Level {{ level }}</div>
+                  <div class="text-caption text-grey-8">{{ TEXT_DE.level }}{{ level }}</div>
                   <div class="text-h5 text-weight-bold text-grey-9">
                     {{ getCardCountByLevel(level) }}
                   </div>
@@ -207,7 +208,7 @@ function goHome() {
               name="grid_on"
               class="q-mr-xs"
             />
-            Karten-Übersicht
+            {{ TEXT_DE.cardsOverview }}
           </div>
 
           <div class="cards-grid-container">
@@ -263,7 +264,7 @@ function goHome() {
                 size="18px"
                 class="q-mr-xs"
               />
-              Legende
+              {{ TEXT_DE.legend }}
             </div>
             <div class="row q-col-gutter-sm">
               <div class="col-12 col-sm-6">
@@ -277,7 +278,7 @@ function goHome() {
                     size="16px"
                     class="q-mr-xs"
                   />
-                  <span class="text-caption">Hintergrund: Level (Rot=1 → Grün=5)</span>
+                  <span class="text-caption">{{ TEXT_DE.legendBackground }}</span>
                 </q-chip>
               </div>
               <div class="col-12 col-sm-6">
@@ -291,7 +292,7 @@ function goHome() {
                     size="16px"
                     class="q-mr-xs"
                   />
-                  <span class="text-caption">Schriftfarbe: Zeit (Grün=schnell → Rot=langsam)</span>
+                  <span class="text-caption">{{ TEXT_DE.legendTextColor }}</span>
                 </q-chip>
               </div>
             </div>
@@ -309,26 +310,14 @@ function goHome() {
               color="primary"
               class="q-mr-sm"
             />
-            <div class="text-subtitle1 text-weight-medium">Als App installieren</div>
+            <div class="text-subtitle1 text-weight-medium">{{ TEXT_DE.pwaInstallTitle }}</div>
           </div>
           <div class="pwa-instructions">
             <div class="q-mb-xs">
-              <q-icon
-                name="smartphone"
-                size="16px"
-                color="positive"
-                class="q-mr-xs"
-              />
-              <strong>Android:</strong> Menü (3 Punkte) → "Zum Startbildschirm hinzufügen"
+              <strong>{{ TEXT_DE.pwaAndroid }}</strong> {{ TEXT_DE.pwaAndroidInstructions }}
             </div>
             <div>
-              <q-icon
-                name="phone_iphone"
-                size="16px"
-                color="primary"
-                class="q-mr-xs"
-              />
-              <strong>iPhone:</strong> Teilen-Symbol → "Zum Home-Bildschirm"
+              <strong>{{ TEXT_DE.pwaIPhone }}</strong> {{ TEXT_DE.pwaIPhoneInstructions }}
             </div>
           </div>
         </q-card-section>

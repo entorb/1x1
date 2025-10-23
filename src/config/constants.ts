@@ -40,6 +40,21 @@ export const MAX_CARD_TIME = 60
 export const SPEED_BONUS_POINTS = 5
 
 /**
+ * Bonus points for the first game of the day
+ */
+export const FIRST_GAME_BONUS = 5
+
+/**
+ * Bonus points for every Nth game of the day
+ */
+export const STREAK_GAME_BONUS = 5
+
+/**
+ * Award streak bonus every N games
+ */
+export const STREAK_GAME_INTERVAL = 5
+
+/**
  * Available multiplication table selections
  */
 export const SELECT_OPTIONS = [3, 4, 5, 6, 7, 8, 9]
@@ -68,6 +83,31 @@ export const PROGRESS_BAR_MAX_RATIO = 1.5
  * Countdown update interval (milliseconds)
  */
 export const COUNTDOWN_INTERVAL = 1000
+
+// ============================================================================
+// TEXT AND LABELS
+// ============================================================================
+
+import { TEXT_DE } from './text-de'
+
+/**
+ * Deprecated: Use TEXT_DE directly for better type safety
+ * This export is kept for backward compatibility
+ */
+export const TEXT = {
+  correct: TEXT_DE.correct,
+  wrong: TEXT_DE.wrong,
+  gameStarted: TEXT_DE.gameStarted,
+  gameOver: TEXT_DE.gameOver,
+  continue: TEXT_DE.continue,
+  wait: TEXT_DE.wait,
+  autoCloseIn: TEXT_DE.autoCloseIn,
+  noGamesPlayed: TEXT_DE.noGamesPlayed,
+  noDataAvailable: TEXT_DE.noDataAvailable,
+  firstGameBonus: TEXT_DE.firstGameBonus,
+  streakGameBonus: TEXT_DE.streakGameBonus,
+  bonusPoints: TEXT_DE.bonusPoints
+}
 
 // ============================================================================
 // RESPONSIVE BREAKPOINTS
@@ -235,9 +275,9 @@ export const FONT_SIZE = {
 // ============================================================================
 
 export const FOCUS_OPTIONS = [
-  { label: 'Schwache', value: 'weak', icon: 'school' },
-  { label: 'Starke', value: 'strong', icon: 'star' },
-  { label: 'Langsame', value: 'slow', icon: 'schedule' }
+  { label: TEXT_DE.focusWeak, value: 'weak', icon: 'school' },
+  { label: TEXT_DE.focusStrong, value: 'strong', icon: 'star' },
+  { label: TEXT_DE.focusSlow, value: 'slow', icon: 'schedule' }
 ] as const
 
 // ============================================================================
@@ -253,19 +293,3 @@ export const STATS_DB_COL = '1x1'
  * Web stats API base URL
  */
 export const WEB_STATS_API_URL = 'https://entorb.net/web-stats-json.php'
-
-// ============================================================================
-// GAME TEXT
-// ============================================================================
-
-export const TEXT = {
-  correct: 'Richtig!',
-  wrong: 'Falsch!',
-  gameStarted: 'Spiel starten',
-  gameOver: 'Spiel beendet!',
-  continue: 'Weiter (Enter)',
-  wait: 'Warte',
-  autoCloseIn: 'Automatisch weiter in',
-  noGamesPlayed: 'Noch keine Spiele gespielt',
-  noDataAvailable: 'Keine Kartendaten verfügbar'
-}

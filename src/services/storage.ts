@@ -6,9 +6,15 @@ export const HISTORY_KEY = '1x1-history'
 export const STATS_KEY = '1x1-stats'
 export const GAME_CONFIG_KEY = '1x1-game-config'
 export const GAME_RESULT_KEY = '1x1-game-result'
+export const DAILY_STATS_KEY = '1x1-daily-stats'
 
 // Expected card count for 3x3 to 9x9 where y <= x
 const EXPECTED_CARD_COUNT = 28
+
+interface DailyStats {
+  date: string // ISO date string (YYYY-MM-DD)
+  gamesPlayed: number
+}
 
 export class StorageService {
   // Cards
@@ -142,11 +148,45 @@ export class StorageService {
     this.saveCards(cards)
   }
 
+  // Daily Stats
+  static getDailyStats(): DailyStats {
+    const stored = localStorage.getItem(DAILY_STATS_KEY)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+    const today = new Date().toISOString().split('T')[0]
+    return {
+      date: today,
+      gamesPlayed: 0
+    }
+  }
+
+  static incrementDailyGames(): { isFirstGame: boolean; gamesPlayedToday: number } {
+    const stats = this.getDailyStats()
+    const today = new Date().toISOString().split('T')[0]
+
+    if (stats.date !== today) {
+      // New day, reset counter
+      const newStats: DailyStats = {
+        date: today,
+        gamesPlayed: 1
+      }
+      localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(newStats))
+      return { isFirstGame: true, gamesPlayedToday: 1 }
+    } else {
+      // Same day, increment counter
+      stats.gamesPlayed++
+      localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(stats))
+      return { isFirstGame: false, gamesPlayedToday: stats.gamesPlayed }
+    }
+  }
+
   // Reset all data
   static resetAll(): void {
     localStorage.removeItem(CARDS_KEY)
     localStorage.removeItem(HISTORY_KEY)
     localStorage.removeItem(STATS_KEY)
+    localStorage.removeItem(DAILY_STATS_KEY)
     sessionStorage.removeItem(GAME_CONFIG_KEY)
     sessionStorage.removeItem(GAME_RESULT_KEY)
   }

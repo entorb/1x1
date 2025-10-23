@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
-import type { FocusType, Statistics } from '@/types'
+import type { FocusType, Statistics, SelectionType } from '@/types'
 import GroundhogMascot from '@/components/GroundhogMascot.vue'
 import { SELECT_OPTIONS, DEFAULT_SELECT, FOCUS_OPTIONS } from '@/config/constants'
+import { TEXT_DE } from '@/config/text-de'
 
 const router = useRouter()
 
@@ -14,10 +15,19 @@ const statistics = ref<Statistics>({
   totalCorrectAnswers: 0
 })
 
-const select = ref<number[]>(DEFAULT_SELECT)
+const select = ref<SelectionType>(DEFAULT_SELECT)
 const focus = ref<FocusType>('weak')
 const selectOptions = SELECT_OPTIONS
 const focusOptions = FOCUS_OPTIONS
+
+// Check if a number is selected
+const isNumberSelected = computed(() => (num: number) => {
+  if (typeof select.value === 'string') return false
+  return select.value.includes(num)
+})
+
+// Check if x² is selected
+const isSquaresSelected = computed(() => select.value === 'x²')
 
 onMounted(() => {
   statistics.value = StorageService.getStatistics()
@@ -65,24 +75,42 @@ function goToStats() {
 }
 
 function toggleSelect(option: number) {
-  const allSelected = selectOptions.every(opt => select.value.includes(opt))
+  // Convert string selections to array first
+  if (typeof select.value === 'string') {
+    select.value = [option]
+    return
+  }
 
-  if (allSelected && select.value.length > 1) {
+  const allSelected = selectOptions.every(
+    opt => Array.isArray(select.value) && select.value.includes(opt)
+  )
+
+  if (allSelected && Array.isArray(select.value) && select.value.length > 1) {
     // If all are selected and clicking one number, select only that number
     select.value = [option]
-  } else if (select.value.includes(option)) {
+  } else if (Array.isArray(select.value) && select.value.includes(option)) {
     // If already selected, select all
     select.value = [...selectOptions]
-  } else {
+  } else if (Array.isArray(select.value)) {
     // Not selected, add it
     select.value = [...select.value, option].sort()
+  }
+}
+
+function toggleSquares() {
+  if (select.value === 'x²') {
+    // If x² is already selected, deselect and go to all
+    select.value = [...selectOptions]
+  } else {
+    // Select x² mode
+    select.value = 'x²'
   }
 }
 </script>
 
 <template>
   <q-page class="q-pa-md page-container">
-    <div class="text-h5 text-center q-mb-md">Vyvit's 1x1</div>
+    <div class="text-h5 text-center q-mb-md">{{ TEXT_DE.appTitle }}</div>
 
     <!-- Mascot and Statistics -->
     <div class="row items-center justify-center q-mb-md mascot-container">
@@ -98,15 +126,15 @@ function toggleSelect(option: number) {
           <q-card-section class="stats-section">
             <div class="row text-center q-gutter-sm justify-around">
               <div class="col-3">
-                <div class="text-caption">Spiele</div>
+                <div class="text-caption">{{ TEXT_DE.games }}</div>
                 <div class="text-h6">{{ statistics.gamesPlayed }}</div>
               </div>
               <div class="col-3">
-                <div class="text-caption">Punkte</div>
+                <div class="text-caption">{{ TEXT_DE.points }}</div>
                 <div class="text-h6">{{ statistics.totalPoints }}</div>
               </div>
               <div class="col-4">
-                <div class="text-caption">Richtige</div>
+                <div class="text-caption">{{ TEXT_DE.correct_plural }}</div>
                 <div class="text-h6">{{ statistics.totalCorrectAnswers }}</div>
               </div>
             </div>
@@ -120,31 +148,41 @@ function toggleSelect(option: number) {
       <q-card-section class="config-section">
         <div class="text-subtitle1 q-mb-sm">
           <q-icon name="settings" />
-          Einstellungen
+          {{ TEXT_DE.settings }}
         </div>
 
         <!-- Select Rows -->
         <div class="q-mb-sm">
-          <div class="text-subtitle2 q-mb-xs">Auswahl</div>
+          <div class="text-subtitle2 q-mb-xs">{{ TEXT_DE.selection }}</div>
           <div class="row q-gutter-xs number-buttons">
             <q-btn
               v-for="option in selectOptions"
               :key="option"
-              :outline="!select.includes(option)"
-              :unelevated="select.includes(option)"
-              :color="select.includes(option) ? 'primary' : 'grey-5'"
+              :outline="!isNumberSelected(option)"
+              :unelevated="isNumberSelected(option)"
+              :color="isNumberSelected(option) ? 'primary' : 'grey-5'"
               size="md"
               class="col"
               @click="toggleSelect(option)"
             >
               <div class="text-body1">{{ option }}</div>
             </q-btn>
+            <q-btn
+              :outline="!isSquaresSelected"
+              :unelevated="isSquaresSelected"
+              :color="isSquaresSelected ? 'secondary' : 'grey-5'"
+              size="md"
+              class="col squares-btn"
+              @click="toggleSquares"
+            >
+              <div class="text-body1">{{ TEXT_DE.selectionSquares }}</div>
+            </q-btn>
           </div>
         </div>
 
         <!-- Focus Selection -->
         <div>
-          <div class="text-subtitle2 q-mb-xs">Fokus</div>
+          <div class="text-subtitle2 q-mb-xs">{{ TEXT_DE.focus }}</div>
           <q-select
             v-model="focus"
             :options="focusOptions"
@@ -152,7 +190,6 @@ function toggleSelect(option: number) {
             dense
             emit-value
             map-options
-            label="Fokus auswählen"
           >
             <template #option="scope">
               <q-item v-bind="scope.itemProps">
@@ -175,10 +212,10 @@ function toggleSelect(option: number) {
       size="lg"
       class="full-width q-mb-sm"
       @click="startGame"
-      :disable="select.length === 0"
+      :disable="typeof select === 'object' && select.length === 0"
       icon="play_arrow"
     >
-      <span class="text-body1">Spiel starten</span>
+      <span class="text-body1">{{ TEXT_DE.start }}</span>
     </q-btn>
 
     <!-- Navigation Buttons -->
@@ -190,7 +227,7 @@ function toggleSelect(option: number) {
         class="col"
         @click="goToStats"
         icon="bar_chart"
-        label="Statistiken"
+        :label="TEXT_DE.goToStats"
       />
       <q-btn
         unelevated
@@ -199,7 +236,7 @@ function toggleSelect(option: number) {
         class="col"
         @click="goToHistory"
         icon="history"
-        label="Spielverlauf"
+        :label="TEXT_DE.goToHistory"
       />
     </div>
   </q-page>

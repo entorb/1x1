@@ -8,6 +8,9 @@ interface Props {
   currentCard: Card | undefined
   userAnswer: number | null
   lastPoints: number
+  basePoints: number
+  levelBonus: number
+  speedBonus: number
   autoCloseCountdown: number
   isButtonDisabled: boolean
   buttonDisableCountdown: number
@@ -56,9 +59,15 @@ function handleKeyup(event: KeyboardEvent) {
         </div>
         <div
           v-if="isCorrect"
-          class="text-h5 q-mt-md points-display"
+          class="q-mt-md"
         >
-          +{{ lastPoints }} Punkte
+          <div class="text-h5 points-display">+{{ lastPoints }} Punkte</div>
+          <div class="text-caption q-mt-xs points-calculation">
+            <span v-if="speedBonus > 0">
+              {{ basePoints }} + {{ levelBonus }} + {{ speedBonus }} = {{ lastPoints }}
+            </span>
+            <span v-else> {{ basePoints }} + {{ levelBonus }} = {{ lastPoints }} </span>
+          </div>
         </div>
       </q-card-section>
 
@@ -142,6 +151,12 @@ function handleKeyup(event: KeyboardEvent) {
   font-weight: 700;
 }
 
+.points-calculation {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
 .answer-section {
   padding: 28px 24px;
 }
@@ -202,6 +217,10 @@ function handleKeyup(event: KeyboardEvent) {
 
   .points-display {
     font-size: 1.25rem;
+  }
+
+  .points-calculation {
+    font-size: 0.75rem;
   }
 
   .answer-section {

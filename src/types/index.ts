@@ -1,5 +1,8 @@
 export type FocusType = 'weak' | 'strong' | 'slow'
 
+// Special selection types
+export type SelectionType = number[] | 'alle' | 'x²'
+
 export interface Card {
   question: string // Format: "XxY" e.g. "3x4"
   answer: number // e.g. 12
@@ -8,13 +11,13 @@ export interface Card {
 }
 
 export interface GameConfig {
-  select: number[] // Array of numbers 2-9, e.g. [2, 3, 5]
-  focus: FocusType // 'weak' or 'strong'
+  select: SelectionType // Array of numbers 3-9, e.g. [3, 5, 7], or 'alle', or 'x²'
+  focus: FocusType // 'weak', 'strong', or 'slow'
 }
 
 export interface GameHistory {
   date: string // ISO date string
-  select: number[]
+  select: SelectionType // Can be number[], 'alle', or 'x²'
   points: number
   correctAnswers: number
 }
@@ -37,5 +40,5 @@ export interface GameResult {
   points: number
   correctAnswers: number
   totalCards: number
-  select: number[]
+  select: SelectionType // Can be number[], 'alle', or 'x²'
 }

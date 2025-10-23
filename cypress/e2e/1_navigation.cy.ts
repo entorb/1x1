@@ -58,4 +58,23 @@ describe('Navigation Smoke Tests', () => {
     // Verify back at home
     cy.contains("Vyvit's 1x1").should('be.visible')
   })
+
+  it('should navigate back to Home via Escape key', () => {
+    // Verify we're on the home page
+    cy.contains("Vyvit's 1x1").should('be.visible')
+
+    // Navigate to History and press Escape
+    cy.contains('button', 'Spielverlauf').click()
+    cy.url().should('include', '/history')
+    cy.get('body').type('{esc}')
+    cy.url().should('not.include', '/history')
+    cy.contains("Vyvit's 1x1").should('be.visible')
+
+    // Navigate to Statistics and press Escape
+    cy.contains('button', 'Statistiken').click()
+    cy.url().should('include', '/stats')
+    cy.get('body').type('{esc}')
+    cy.url().should('not.include', '/stats')
+    cy.contains("Vyvit's 1x1").should('be.visible')
+  })
 })

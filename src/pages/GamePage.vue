@@ -17,6 +17,7 @@ import {
   PROGRESS_BAR_MAX_RATIO,
   COUNTDOWN_INTERVAL
 } from '@/config/constants'
+import { TEXT_DE } from '@/config/text-de'
 
 const router = useRouter()
 
@@ -29,6 +30,9 @@ const userAnswer = ref<number | null>(null)
 const showFeedback = ref(false)
 const isCorrect = ref(false)
 const lastPoints = ref(0)
+const basePoints = ref(0)
+const levelBonus = ref(0)
+const speedBonus = ref(0)
 const answerStartTime = ref(0)
 const answerInput = ref()
 const autoCloseCountdown = ref(0)
@@ -90,10 +94,25 @@ function initializeGame() {
   }
 
   const allCards = StorageService.getCards()
-  const selectedCards = allCards.filter(card => {
-    const [x, y] = card.question.split('x').map(Number)
-    return config.select.includes(x) || config.select.includes(y)
-  })
+  let selectedCards: Card[]
+
+  if (config.select === 'x²') {
+    // Select only square cards (3x3, 4x4, ..., 9x9)
+    selectedCards = allCards.filter(card => {
+      const [x, y] = card.question.split('x').map(Number)
+      return x === y
+    })
+  } else if (config.select === 'alle') {
+    // Select all cards
+    selectedCards = allCards
+  } else {
+    // Select cards based on number array
+    const selectArray = Array.isArray(config.select) ? config.select : []
+    selectedCards = allCards.filter(card => {
+      const [x, y] = card.question.split('x').map(Number)
+      return selectArray.includes(x) || selectArray.includes(y)
+    })
+  }
 
   // Select cards based on focus
   const pickedCards = selectCards(selectedCards, config.focus, MAX_CARDS_PER_GAME)
@@ -218,14 +237,17 @@ function submitAnswer() {
     // Correct answer
     isCorrect.value = true
     const [x, y] = card.question.split('x').map(Number)
-    const minXY = Math.min(x, y)
-    lastPoints.value = minXY + (MAX_CARD_LEVEL + 1 - card.level)
+    basePoints.value = Math.min(x, y)
+    levelBonus.value = MAX_CARD_LEVEL + 1 - card.level
 
-    // Add speed bonus if last time < MAX_CARD_TIME and current time < last time
-    if (card.time < MAX_CARD_TIME && timeTaken.value < card.time) {
-      lastPoints.value += SPEED_BONUS_POINTS
+    // Add speed bonus if last time < MAX_CARD_TIME and current time <= last time
+    if (card.time < MAX_CARD_TIME && timeTaken.value <= card.time) {
+      speedBonus.value = SPEED_BONUS_POINTS
+    } else {
+      speedBonus.value = 0
     }
 
+    lastPoints.value = basePoints.value + levelBonus.value + speedBonus.value
     currentPoints.value += lastPoints.value
     correctAnswers.value++
 
@@ -243,6 +265,9 @@ function submitAnswer() {
     // Wrong answer
     isCorrect.value = false
     lastPoints.value = 0
+    basePoints.value = 0
+    levelBonus.value = 0
+    speedBonus.value = 0
 
     // Update card in storage
     const newLevel = Math.max(card.level - 1, MIN_CARD_LEVEL)
@@ -336,10 +361,20 @@ function finishGame() {
   const config = StorageService.getGameConfig()
 
   if (config) {
+    // Convert [3,4,5,6,7,8,9] to "alle" for cleaner display
+    let selectForHistory = config.select
+    if (
+      Array.isArray(config.select) &&
+      config.select.length === 7 &&
+      config.select.every((num, idx) => num === idx + 3)
+    ) {
+      selectForHistory = 'alle'
+    }
+
     // Save to history
     StorageService.addHistory({
       date: new Date().toISOString(),
-      select: config.select,
+      select: selectForHistory,
       points: currentPoints.value,
       correctAnswers: correctAnswers.value
     })
@@ -349,7 +384,7 @@ function finishGame() {
       points: currentPoints.value,
       correctAnswers: correctAnswers.value,
       totalCards: gameCards.value.length,
-      select: config.select
+      select: selectForHistory
     })
   }
 
@@ -458,7 +493,7 @@ function goHome() {
           icon="check"
         >
           <span class="button-label">
-            {{ isButtonDisabled ? `Warte ${buttonDisableCountdown}s...` : 'Prüfen' }}
+            {{ isButtonDisabled ? `${TEXT_DE.wait} ${buttonDisableCountdown}s...` : TEXT_DE.check }}
           </span>
         </q-btn>
       </div>
@@ -470,6 +505,9 @@ function goHome() {
         :current-card="currentCard"
         :user-answer="userAnswer"
         :last-points="lastPoints"
+        :base-points="basePoints"
+        :level-bonus="levelBonus"
+        :speed-bonus="speedBonus"
         :auto-close-countdown="autoCloseCountdown"
         :is-button-disabled="isButtonDisabled"
         :button-disable-countdown="buttonDisableCountdown"

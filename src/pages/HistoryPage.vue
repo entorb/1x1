@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { StorageService } from '@/services/storage'
 import type { GameHistory } from '@/types'
+import { TEXT_DE } from '@/config/text-de'
 
 const router = useRouter()
 const history = ref<GameHistory[]>([])
@@ -40,6 +41,13 @@ function formatDate(dateString: string): string {
   return new Intl.DateTimeFormat('de-DE', options).format(date)
 }
 
+function formatSelection(select: number[] | string): string {
+  if (typeof select === 'string') {
+    return select
+  }
+  return select.join(', ')
+}
+
 function goHome() {
   router.push({ name: '/' })
 }
@@ -57,7 +65,7 @@ function goHome() {
         size="md"
         class="back-btn"
       />
-      <div class="text-h5 q-ml-sm page-title">Spielverlauf</div>
+      <div class="text-h5 q-ml-sm page-title">{{ TEXT_DE.goToHistory }}</div>
     </div>
 
     <!-- Empty State -->
@@ -71,7 +79,7 @@ function goHome() {
         color="grey-5"
         class="empty-icon"
       />
-      <div class="text-h6 text-grey-6 q-mt-md empty-text">Noch keine Spiele gespielt</div>
+      <div class="text-h6 text-grey-6 q-mt-md empty-text">{{ TEXT_DE.noGamesPlayed }}</div>
     </div>
 
     <!-- History List -->
@@ -107,7 +115,7 @@ function goHome() {
             caption
             class="game-select"
           >
-            Auswahl: {{ game.select.join(', ') }}
+            {{ TEXT_DE.selectionPrefix }}{{ formatSelection(game.select) }}
           </q-item-label>
         </q-item-section>
 
@@ -117,7 +125,9 @@ function goHome() {
         >
           <div class="column items-end">
             <div class="text-h6 text-primary points-value">{{ game.points }}</div>
-            <div class="text-caption correct-answers">{{ game.correctAnswers }} richtig</div>
+            <div class="text-caption correct-answers">
+              {{ game.correctAnswers }}{{ TEXT_DE.correctSuffix }}
+            </div>
           </div>
         </q-item-section>
       </q-item>
