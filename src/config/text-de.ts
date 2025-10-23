@@ -59,6 +59,7 @@ export const TEXT_DE = {
   legend: 'Legende',
   legendBackground: 'Hintergrund: Level (Rot=1 → Grün=5)',
   legendTextColor: 'Schriftfarbe: Zeit (Grün=schnell → Rot=langsam)',
+  footerNoDataStored: 'Keine Deiner Daten werden auf dem Server gespeichert.',
 
   // Reset dialog
   resetCardsTitle: 'Karten zurücksetzen',

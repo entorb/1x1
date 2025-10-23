@@ -90,25 +90,6 @@ export const COUNTDOWN_INTERVAL = 1000
 
 import { TEXT_DE } from './text-de'
 
-/**
- * Deprecated: Use TEXT_DE directly for better type safety
- * This export is kept for backward compatibility
- */
-export const TEXT = {
-  correct: TEXT_DE.correct,
-  wrong: TEXT_DE.wrong,
-  gameStarted: TEXT_DE.gameStarted,
-  gameOver: TEXT_DE.gameOver,
-  continue: TEXT_DE.continue,
-  wait: TEXT_DE.wait,
-  autoCloseIn: TEXT_DE.autoCloseIn,
-  noGamesPlayed: TEXT_DE.noGamesPlayed,
-  noDataAvailable: TEXT_DE.noDataAvailable,
-  firstGameBonus: TEXT_DE.firstGameBonus,
-  streakGameBonus: TEXT_DE.streakGameBonus,
-  bonusPoints: TEXT_DE.bonusPoints
-}
-
 // ============================================================================
 // RESPONSIVE BREAKPOINTS
 // ============================================================================
