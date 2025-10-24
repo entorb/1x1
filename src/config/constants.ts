@@ -70,16 +70,6 @@ export const DEFAULT_SELECT = [3, 4, 5, 6, 7, 8, 9]
 export const MAX_CARDS_PER_GAME = 10
 
 /**
- * Time tracking update interval (milliseconds)
- */
-export const TIME_TRACKING_INTERVAL = 100
-
-/**
- * Maximum progress bar ratio before color changes
- */
-export const PROGRESS_BAR_MAX_RATIO = 1.5
-
-/**
  * Countdown update interval (milliseconds)
  */
 export const COUNTDOWN_INTERVAL = 1000

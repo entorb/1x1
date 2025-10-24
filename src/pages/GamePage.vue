@@ -13,8 +13,6 @@ import {
   MAX_CARD_TIME,
   SPEED_BONUS_POINTS,
   MAX_CARDS_PER_GAME,
-  TIME_TRACKING_INTERVAL,
-  PROGRESS_BAR_MAX_RATIO,
   COUNTDOWN_INTERVAL
 } from '@/config/constants'
 import { TEXT_DE } from '@/config/text-de'
@@ -36,15 +34,12 @@ const speedBonus = ref(0)
 const answerStartTime = ref(0)
 const answerInput = ref()
 const autoCloseCountdown = ref(0)
-const elapsedTime = ref(0)
-const timeProgress = ref(0)
 const isButtonDisabled = ref(false)
 const buttonDisableCountdown = ref(0)
 const timeTaken = ref(0)
 const isEnterDisabled = ref(false)
 let autoCloseTimer: ReturnType<typeof setTimeout> | null = null
 let countdownInterval: ReturnType<typeof setInterval> | null = null
-let timeTrackingInterval: ReturnType<typeof setInterval> | null = null
 let buttonDisableTimer: ReturnType<typeof setTimeout> | null = null
 let buttonDisableCountdownInterval: ReturnType<typeof setInterval> | null = null
 let enterDisableTimer: ReturnType<typeof setTimeout> | null = null
@@ -67,7 +62,6 @@ watch(userAnswer, newValue => {
 })
 
 function clearAllTimers() {
-  if (timeTrackingInterval) clearInterval(timeTrackingInterval)
   if (buttonDisableTimer) clearTimeout(buttonDisableTimer)
   if (buttonDisableCountdownInterval) clearInterval(buttonDisableCountdownInterval)
   if (enterDisableTimer) clearTimeout(enterDisableTimer)
@@ -121,7 +115,6 @@ function initializeGame() {
   gameStarted.value = true
 
   answerStartTime.value = Date.now()
-  startTimeTracking()
 }
 
 function selectCards(cards: Card[], focus: FocusType, count: number): Card[] {
@@ -168,27 +161,6 @@ function selectCards(cards: Card[], focus: FocusType, count: number): Card[] {
   return selected
 }
 
-function startTimeTracking() {
-  elapsedTime.value = 0
-  timeProgress.value = 0
-  if (timeTrackingInterval) clearInterval(timeTrackingInterval)
-
-  timeTrackingInterval = setInterval(() => {
-    elapsedTime.value = (Date.now() - answerStartTime.value) / 1000
-    if (currentCard.value) {
-      const cappedTime = Math.min(currentCard.value.time, MAX_CARD_TIME)
-      timeProgress.value = Math.min(elapsedTime.value / cappedTime, PROGRESS_BAR_MAX_RATIO)
-    }
-  }, TIME_TRACKING_INTERVAL)
-}
-
-function stopTimeTracking() {
-  if (timeTrackingInterval) {
-    clearInterval(timeTrackingInterval)
-    timeTrackingInterval = null
-  }
-}
-
 function startButtonDisableTimer() {
   isButtonDisabled.value = true
   buttonDisableCountdown.value = BUTTON_DISABLE_DURATION / 1000
@@ -227,9 +199,7 @@ function clearButtonDisableTimers() {
 function submitAnswer() {
   if (userAnswer.value === null || userAnswer.value === undefined) return
 
-  // Stop time tracking
-  stopTimeTracking()
-
+  // Calculate time taken
   timeTaken.value = (Date.now() - answerStartTime.value) / 1000
   const card = currentCard.value
 
@@ -343,7 +313,6 @@ function nextCard() {
     finishGame()
   } else {
     answerStartTime.value = Date.now()
-    startTimeTracking()
     nextTick(() => {
       nextTick(() => {
         answerInput.value?.focus()
@@ -354,7 +323,6 @@ function nextCard() {
 
 function finishGame() {
   // Clean up all timers
-  stopTimeTracking()
   clearButtonDisableTimers()
 
   // Read game config from session storage
@@ -448,16 +416,6 @@ function goHome() {
             </div>
           </div>
           <div class="question-text q-my-md">{{ displayQuestion }}</div>
-
-          <!-- Time Progress Bar -->
-          <q-linear-progress
-            :key="currentCardIndex"
-            :value="timeProgress"
-            :color="timeProgress >= 1 ? 'negative' : 'primary'"
-            size="10px"
-            class="q-mt-md progress-bar"
-            rounded
-          />
         </q-card-section>
       </q-card>
 
@@ -534,10 +492,6 @@ function goHome() {
   font-size: 4rem;
   font-weight: 700;
   line-height: 1.2;
-}
-
-.progress-bar {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Mobile: smaller question text */
