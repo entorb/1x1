@@ -85,12 +85,6 @@ export const PROGRESS_BAR_MAX_RATIO = 1.5
 export const COUNTDOWN_INTERVAL = 1000
 
 // ============================================================================
-// TEXT AND LABELS
-// ============================================================================
-
-import { TEXT_DE } from './text-de'
-
-// ============================================================================
 // RESPONSIVE BREAKPOINTS
 // ============================================================================
 
@@ -184,7 +178,7 @@ export const GRID_CONFIG = {
 // ============================================================================
 
 /**
- * Level colors (from red=weak to green=strong)
+ * StatsPage: Level colors (from red=weak to green=strong)
  */
 export const LEVEL_COLORS = {
   1: '#ffcdd2', // red-100
@@ -195,7 +189,7 @@ export const LEVEL_COLORS = {
 }
 
 /**
- * Time colors (from green=fast to red=slow)
+ * StatsPage: Time colors (from green=fast to red=slow)
  */
 export const TIME_COLORS = {
   veryFast: '#2e7d32', // green-800
@@ -206,7 +200,7 @@ export const TIME_COLORS = {
 }
 
 /**
- * Thresholds for time color transitions (normalized 0-1)
+ * StatsPage: Thresholds for time color transitions (normalized 0-1)
  */
 export const TIME_COLOR_THRESHOLDS = {
   veryFast: 0.2,
@@ -254,6 +248,7 @@ export const FONT_SIZE = {
 // ============================================================================
 // FOCUS OPTIONS
 // ============================================================================
+import { TEXT_DE } from './text-de'
 
 export const FOCUS_OPTIONS = [
   { label: TEXT_DE.focusWeak, value: 'weak', icon: 'school' },
